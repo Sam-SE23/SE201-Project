@@ -1,0 +1,8 @@
+gradio>=5,<6
+pdfplumber
+python-pptx
+python-dotenv
+
+# tests only
+pytest
+reportlab
