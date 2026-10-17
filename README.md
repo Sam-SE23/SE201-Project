@@ -90,6 +90,7 @@ Each member keeps their own log at `ai-log/<your-name>.md` (see `ai-log/darrion-
 ```bash
 python -m venv venv
 source venv/bin/activate        # Windows: venv\Scripts\activate
+cd backend/rag-pipeline
 pip install -r requirements.txt
 ```
 
