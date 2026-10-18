@@ -136,9 +136,7 @@ hits = retrieve("What is the refund policy?", k=5)
 # -> [{"text": ..., "source": "handbook.pdf", "page": 3, "score": 0.82}, ...]
 ```
 
-Don't change this function's signature or return shape without telling
-the team — Member 2's orchestration code and Member 3's eval harness
-both call it directly.
+This function's signature or return shape will not be changed arbitrarily.
 
 ## Tuning
 
@@ -148,11 +146,9 @@ Everything worth tuning lives in `config.py`:
 - `DEFAULT_TOP_K` — how many chunks get passed to the LLM. Too low misses
   context, too high adds noise and cost.
 - `EMBEDDING_MODEL` — defaults to a free local model (`all-MiniLM-L6-v2`).
-  Swap for an API-based model (e.g. OpenAI `text-embedding-3-small`) in
-  `pipeline/embed.py` if you want higher retrieval quality and don't mind
-  the API cost/key management.
+   May switch models when tuning it further.
 
-## Known limitations (be upfront about these in the writeup)
+## Known limitations (temporarily)
 
 - Chunking is naive fixed-size — it can split sentences mid-thought. Fine
   as a baseline; worth noting as a limitation / future improvement.
