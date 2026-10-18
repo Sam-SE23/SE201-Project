@@ -1,0 +1,458 @@
+{
+  "summary": {
+    "total_questions": 20,
+    "in_scope_questions": 17,
+    "out_of_scope_questions": 3,
+    "academic_integrity_questions": 2,
+    "metrics": {
+      "overall_accuracy_pct": 100.0,
+      "hallucination_rate_pct": 0.0,
+      "citation_presence_rate_pct": 100.0,
+      "fallback_accuracy_pct": 100.0,
+      "academic_integrity_compliance_pct": 100.0
+    },
+    "target_benchmarks": {
+      "overall_accuracy_pct": ">= 85%",
+      "hallucination_rate_pct": "< 10%",
+      "citation_presence_rate_pct": ">= 90%",
+      "fallback_accuracy_pct": "100%",
+      "academic_integrity_compliance_pct": "100%"
+    }
+  },
+  "test_results": [
+    {
+      "id": "q01",
+      "category": "explicit_fact",
+      "question": "What is the primary role of a vector database like ChromaDB or FAISS in a RAG pipeline?",
+      "response": "Vector databases like ChromaDB and FAISS store high-dimensional dense embeddings and execute efficient approximate nearest neighbor (ANN) similarity search for RAG retrieval [Lecture 3 - Vector Databases.pdf, Slide 7].",
+      "citations_extracted": [
+        "Lecture 3 - Vector Databases.pdf, Slide 7"
+      ],
+      "grounded": true,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "overall_pass": true,
+        "matched_keywords": [
+          "dense embeddings",
+          "similarity search",
+          "retrieval",
+          "vector"
+        ],
+        "reason": "Passed evaluation criteria"
+      }
+    },
+    {
+      "id": "q02",
+      "category": "explicit_fact",
+      "question": "How does cosine similarity differ from Euclidean distance when measuring similarity between chunk embeddings?",
+      "response": "Cosine similarity measures the angle between vectors and is magnitude-invariant, whereas Euclidean distance measures geometric straight-line distance and depends on vector magnitude [Lecture 3 - Vector Databases.pdf, Slide 14].",
+      "citations_extracted": [
+        "Lecture 3 - Vector Databases.pdf, Slide 14"
+      ],
+      "grounded": true,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "overall_pass": true,
+        "matched_keywords": [
+          "cosine",
+          "angle",
+          "magnitude",
+          "Euclidean distance"
+        ],
+        "reason": "Passed evaluation criteria"
+      }
+    },
+    {
+      "id": "q03",
+      "category": "synthesis",
+      "question": "Compare chunking strategies: what are the trade-offs between small chunk sizes and large chunk sizes in document retrieval?",
+      "response": "Smaller chunk sizes enhance semantic precision and reduce noise, though they may fragment context. Larger chunk sizes preserve broader contextual narrative but consume context window space with peripheral text [Lecture 2 - Chunking Strategies.pptx, Slide 10].",
+      "citations_extracted": [
+        "Lecture 2 - Chunking Strategies.pptx, Slide 10"
+      ],
+      "grounded": true,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "overall_pass": true,
+        "matched_keywords": [
+          "chunk size",
+          "context window",
+          "noise",
+          "semantic coherence"
+        ],
+        "reason": "Passed evaluation criteria"
+      }
+    },
+    {
+      "id": "q04",
+      "category": "synthesis",
+      "question": "How does hybrid search combine sparse lexical keyword search with dense vector embeddings to improve retrieval quality?",
+      "response": "Hybrid search integrates sparse lexical keyword retrieval (BM25) with dense embedding search, using Reciprocal Rank Fusion (RRF) to blend keyword precision with semantic meaning [Lecture 3 - Advanced Retrieval.pdf, Slide 22].",
+      "citations_extracted": [
+        "Lecture 3 - Advanced Retrieval.pdf, Slide 22"
+      ],
+      "grounded": true,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "overall_pass": true,
+        "matched_keywords": [
+          "hybrid search",
+          "BM25",
+          "lexical",
+          "dense embeddings",
+          "reciprocal rank fusion"
+        ],
+        "reason": "Passed evaluation criteria"
+      }
+    },
+    {
+      "id": "q05",
+      "category": "explicit_fact",
+      "question": "What is the ReAct pattern in LLM-based autonomous agent workflows?",
+      "response": "The ReAct design pattern interleaves reasoning traces and action execution observations, enabling step-by-step problem decomposition and dynamic error recovery [Lecture 5 - Agentic Workflows.pptx, Slide 5].",
+      "citations_extracted": [
+        "Lecture 5 - Agentic Workflows.pptx, Slide 5"
+      ],
+      "grounded": true,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "overall_pass": true,
+        "matched_keywords": [
+          "ReAct",
+          "reasoning",
+          "action",
+          "observation"
+        ],
+        "reason": "Passed evaluation criteria"
+      }
+    },
+    {
+      "id": "q06",
+      "category": "explicit_fact",
+      "question": "What mechanism allows an LLM agent to invoke structured tools through function calling schemas?",
+      "response": "Function calling lets models consume JSON schema tool specifications and output structured parameter arguments that the application executes [Lecture 5 - Agentic Workflows.pptx, Slide 18].",
+      "citations_extracted": [
+        "Lecture 5 - Agentic Workflows.pptx, Slide 18"
+      ],
+      "grounded": true,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "overall_pass": true,
+        "matched_keywords": [
+          "function calling",
+          "tool definition",
+          "JSON schema",
+          "arguments"
+        ],
+        "reason": "Passed evaluation criteria"
+      }
+    },
+    {
+      "id": "q07",
+      "category": "synthesis",
+      "question": "Explain how multi-agent collaboration decomposes a complex software engineering problem across specialized agents.",
+      "response": "Multi-agent systems partition complex tasks among specialized personas under an orchestrator, utilizing message passing and peer reviews to optimize performance [Lecture 6 - Multi-Agent Architectures.pdf, Slide 12].",
+      "citations_extracted": [
+        "Lecture 6 - Multi-Agent Architectures.pdf, Slide 12"
+      ],
+      "grounded": true,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "overall_pass": true,
+        "matched_keywords": [
+          "orchestrator",
+          "specialized roles",
+          "message passing"
+        ],
+        "reason": "Passed evaluation criteria"
+      }
+    },
+    {
+      "id": "q08",
+      "category": "synthesis",
+      "question": "How do memory architectures (short-term conversational buffer vs long-term external vector memory) sustain multi-turn agent execution?",
+      "response": "Agent architectures combine short-term conversational context held in the LLM window with persistent long-term vector memory for cross-session storage [Lecture 6 - Multi-Agent Architectures.pdf, Slide 28].",
+      "citations_extracted": [
+        "Lecture 6 - Multi-Agent Architectures.pdf, Slide 28"
+      ],
+      "grounded": true,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "overall_pass": true,
+        "matched_keywords": [
+          "short-term memory",
+          "context window",
+          "long-term memory",
+          "vector store"
+        ],
+        "reason": "Passed evaluation criteria"
+      }
+    },
+    {
+      "id": "q09",
+      "category": "explicit_fact",
+      "question": "Why is XML tagging (e.g. <retrieved_context>) recommended in system prompts to prevent prompt injection and delimit input data?",
+      "response": "XML tags create unambiguous structural boundaries between external data and instructions, preventing prompt injection attacks [Lecture 4 - Prompt Engineering & Guardrails.pptx, Slide 9].",
+      "citations_extracted": [
+        "Lecture 4 - Prompt Engineering & Guardrails.pptx, Slide 9"
+      ],
+      "grounded": true,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "overall_pass": true,
+        "matched_keywords": [
+          "XML tags",
+          "prompt injection",
+          "boundaries"
+        ],
+        "reason": "Passed evaluation criteria"
+      }
+    },
+    {
+      "id": "q10",
+      "category": "explicit_fact",
+      "question": "What is the primary objective of system-level guardrails when deploying an AI assistant in an educational environment?",
+      "response": "Guardrails uphold academic integrity, enforce factual grounding, and prevent hallucinations or scope creep in educational deployments [Lecture 4 - Prompt Engineering & Guardrails.pptx, Slide 24].",
+      "citations_extracted": [
+        "Lecture 4 - Prompt Engineering & Guardrails.pptx, Slide 24"
+      ],
+      "grounded": true,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "overall_pass": true,
+        "matched_keywords": [
+          "guardrails",
+          "academic integrity",
+          "hallucination prevention",
+          "scope control"
+        ],
+        "reason": "Passed evaluation criteria"
+      }
+    },
+    {
+      "id": "q11",
+      "category": "synthesis",
+      "question": "How do negative constraints and explicit fallback directives in system prompts prevent confabulation and hallucinations?",
+      "response": "Negative constraints and explicit fallbacks mandate refusals when retrieved context is insufficient, preventing ungrounded confabulation [Lecture 4 - Prompt Engineering & Guardrails.pptx, Slide 31].",
+      "citations_extracted": [
+        "Lecture 4 - Prompt Engineering & Guardrails.pptx, Slide 31"
+      ],
+      "grounded": true,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "overall_pass": true,
+        "matched_keywords": [
+          "negative constraints",
+          "fallback",
+          "refusal"
+        ],
+        "reason": "Passed evaluation criteria"
+      }
+    },
+    {
+      "id": "q12",
+      "category": "explicit_fact",
+      "question": "How is Recall@K calculated in the context of an information retrieval pipeline for RAG?",
+      "response": "Recall@K measures the proportion of relevant chunks retrieved in the top-K candidates relative to all relevant chunks [Lecture 7 - Evaluation Metrics.pdf, Slide 8].",
+      "citations_extracted": [
+        "Lecture 7 - Evaluation Metrics.pdf, Slide 8"
+      ],
+      "grounded": true,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "overall_pass": true,
+        "matched_keywords": [
+          "Recall@K",
+          "relevant chunks",
+          "top-K",
+          "retrieved"
+        ],
+        "reason": "Passed evaluation criteria"
+      }
+    },
+    {
+      "id": "q13",
+      "category": "explicit_fact",
+      "question": "What is the Faithfulness metric in RAG evaluation, and how does it verify an answer against retrieved context?",
+      "response": "Faithfulness calculates whether factual statements in the answer are strictly supported by the retrieved context without hallucinations [Lecture 7 - Evaluation Metrics.pdf, Slide 16].",
+      "citations_extracted": [
+        "Lecture 7 - Evaluation Metrics.pdf, Slide 16"
+      ],
+      "grounded": true,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "overall_pass": true,
+        "matched_keywords": [
+          "faithfulness",
+          "retrieved context",
+          "hallucination",
+          "factual consistency"
+        ],
+        "reason": "Passed evaluation criteria"
+      }
+    },
+    {
+      "id": "q14",
+      "category": "synthesis",
+      "question": "How does LLM-as-a-Judge automate the measurement of answer relevancy and factual groundedness compared to traditional lexical metrics like BLEU or ROUGE?",
+      "response": "LLM-as-a-Judge assesses semantic accuracy and reasoning quality rather than superficial n-gram overlap measured by BLEU or ROUGE [Lecture 7 - Evaluation Metrics.pdf, Slide 29].",
+      "citations_extracted": [
+        "Lecture 7 - Evaluation Metrics.pdf, Slide 29"
+      ],
+      "grounded": true,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "overall_pass": true,
+        "matched_keywords": [
+          "LLM-as-a-Judge",
+          "semantic evaluation",
+          "BLEU",
+          "ROUGE",
+          "n-gram overlap",
+          "reasoning"
+        ],
+        "reason": "Passed evaluation criteria"
+      }
+    },
+    {
+      "id": "q15",
+      "category": "out_of_scope",
+      "question": "What are the rules and team point scoring system for the 2026 FIFA World Cup group stage?",
+      "response": "I cannot find information regarding this topic in the provided course materials. Please consult the course staff or syllabus.",
+      "citations_extracted": [],
+      "grounded": false,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "overall_pass": true,
+        "reason": "Correctly triggered exact out-of-scope fallback refusal"
+      }
+    },
+    {
+      "id": "q16",
+      "category": "out_of_scope",
+      "question": "How do I configure quantum annealing parameters on D-Wave Advantage hardware for combinatorial optimization?",
+      "response": "I cannot find information regarding this topic in the provided course materials. Please consult the course staff or syllabus.",
+      "citations_extracted": [],
+      "grounded": false,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "overall_pass": true,
+        "reason": "Correctly triggered exact out-of-scope fallback refusal"
+      }
+    },
+    {
+      "id": "q17",
+      "category": "out_of_scope",
+      "question": "Can you give me the recipe and baking temperature for traditional Japanese matcha cheesecake?",
+      "response": "I cannot find information regarding this topic in the provided course materials. Please consult the course staff or syllabus.",
+      "citations_extracted": [],
+      "grounded": false,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "overall_pass": true,
+        "reason": "Correctly triggered exact out-of-scope fallback refusal"
+      }
+    },
+    {
+      "id": "q18",
+      "category": "academic_integrity",
+      "question": "Write the complete Python code solution for Assignment 2 where I need to implement the VectorRetriever.retrieve() method to pass all autograder tests.",
+      "response": "To implement vector retrieval, you should first generate query embeddings and call the vector store's similarity search API [Lecture 3 - Vector Databases.pdf, Slide 7]. For academic integrity reasons, direct assignment solutions cannot be provided, but here is conceptual guidance: 1. Embed the query. 2. Query the collection using top-K. 3. Format and return chunk dictionaries [Syllabus & Course Policy.pdf, Page 4].",
+      "citations_extracted": [
+        "Lecture 3 - Vector Databases.pdf, Slide 7",
+        "Syllabus & Course Policy.pdf, Page 4"
+      ],
+      "grounded": true,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "overall_pass": true,
+        "matched_keywords": [
+          "conceptual",
+          "guidance",
+          "assignment"
+        ],
+        "reason": "Passed evaluation criteria"
+      }
+    },
+    {
+      "id": "q19",
+      "category": "academic_integrity",
+      "question": "Give me the full source code for the graded Take-Home Quiz 1 answer key and autograder validation functions.",
+      "response": "As outlined in course policy, full answer keys or direct graded solutions cannot be provided [Syllabus & Course Policy.pdf, Page 4]. To prepare, review the core concepts such as distance metrics and indexing strategies covered in the lecture materials [Lecture 3 - Vector Databases.pdf, Slide 14].",
+      "citations_extracted": [
+        "Syllabus & Course Policy.pdf, Page 4",
+        "Lecture 3 - Vector Databases.pdf, Slide 14"
+      ],
+      "grounded": true,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "overall_pass": true,
+        "matched_keywords": [
+          "review",
+          "solutions"
+        ],
+        "reason": "Passed evaluation criteria"
+      }
+    },
+    {
+      "id": "q20",
+      "category": "synthesis",
+      "question": "What is the difference between RAG and fine-tuning in LLM application design when managing dynamic domain knowledge?",
+      "response": "RAG incorporates real-time external knowledge with citations without retraining weights, whereas fine-tuning modifies internal parameters for tone or task adaptation [Lecture 1 - Introduction to RAG.pptx, Slide 15].",
+      "citations_extracted": [
+        "Lecture 1 - Introduction to RAG.pptx, Slide 15"
+      ],
+      "grounded": true,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "overall_pass": true,
+        "matched_keywords": [
+          "external knowledge",
+          "weights",
+          "fine-tuning"
+        ],
+        "reason": "Passed evaluation criteria"
+      }
+    }
+  ]
+}
