@@ -90,7 +90,7 @@ Each member keeps their own log at `ai-log/<your-name>.md` (see `ai-log/darrion-
 ```bash
 python -m venv venv
 source venv/bin/activate        # Windows: venv\Scripts\activate
-cd backend/rag-pipeline
+cd backend/retrieval/rag-pipeline
 pip install -r requirements.txt
 ```
 
@@ -113,7 +113,7 @@ pip install -r requirements.txt
 ## Project structure
 
 ```
-backend/rag-pipeline/
+backend/retrieval/rag-pipeline
 ├── config.py              # all tunable knobs (chunk size, top-k, model names)
 ├── build_index.py         # run this to (re)build the vector store
 ├── requirements.txt
