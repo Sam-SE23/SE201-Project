@@ -27,3 +27,17 @@ Confirmed from the installed Gradio source that Settings, PWA, Screen Studio and
 
 ### What I kept or changed
 The first proposal hid only Screen Studio. I changed that to hide Language and PWA as well, keeping only the theme switch. For the textboxes, I rejected the proposal to turn them into single-line inputs and kept them as multi-line textareas with the scrollbar hidden.
+
+## 2026-10-25 · Connect the RAG retriever and QA engine to the orchestrator
+- **Tool (model):** Claude Code (Claude Opus 5.5)
+- **Files:** backend/retrieval/__init__.py, backend/registry.py, tests/test_real_pipeline.py, tests/test_orchestrator.py, requirements.txt, .gitignore, .env.example, README.md
+- **Outcome:** Changed
+
+### What I asked for
+Create a plan to do the following: connect Lichelle's Chroma pipeline to the orchestrator, turn on Guru's grounded QA engine in the app, and update the tests and README. I asked for the LLM provider choice to be left out for now.
+
+### How I checked it
+Reviewed the plan before any code was written, and verified if it would modify any of Lichelle's files. Ran the pytest suite: 22 tests passing, including 7 new ones that run the real retriever and QA engine through the orchestrator on a temporary Chroma store. Loaded the app's components with STUDY_BUDDY_RETRIEVER=real and STUDY_BUDDY_QA=real and confirmed both load as real, with the stub-LLM warning shown. Queried the existing Week 1–2 lecture index to check the 0.3 relevance cutoff: lecture questions scored 0.45–0.57 and were kept, and off-topic questions scored 0.09–0.28 and were dropped.
+
+### What I kept or changed
+Kept the adapter design, which wraps Lichelle's pipeline without editing her code, and the relevance cutoff for out-of-scope questions. Put off the LLM provider as it is undecided. Kept the decision to stop tracking the Chroma store in git.
