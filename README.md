@@ -79,6 +79,24 @@ backend/orchestrator.py ──► Retriever   (backend/retrieval/)
 
 Add any new dependencies (e.g. `chromadb`, `anthropic`) to `requirements.txt`.
 
+### Current status
+
+| Component | Real module | Notes |
+|---|---|---|
+| Retriever | ✅ `backend/retrieval/__init__.py` | Adapter over the Chroma pipeline in `rag-pipeline/`. The first run downloads the `all-MiniLM-L6-v2` embedding model. The index lives in `backend/retrieval/rag-pipeline/store/` (git-ignored) and is shared with `build_index.py`. Hits below `MIN_SCORE` are dropped, so out-of-scope questions get no chunks. |
+| QA engine | ✅ `backend/qa/` | Works, but on the stub LLM the answers are placeholders; the app shows a warning. |
+| LLM | ❌ stub | Provider not chosen yet. |
+| Quiz engine | ❌ stub | |
+
+To run with real retrieval and the real QA engine, set these in `.env`:
+
+```bash
+STUDY_BUDDY_RETRIEVER=real
+STUDY_BUDDY_QA=real
+```
+
+`tests/test_real_pipeline.py` covers the real retriever and QA engine through the orchestrator. It is skipped if `chromadb` or `sentence-transformers` isn't installed.
+
 ## AI use log
 
 Each member keeps their own log at `ai-log/<your-name>.md` (see `ai-log/darrion-ong.md` for the format). Edit only your own file, and commit each entry together with the work it describes. Runtime AI calls made by the app are logged separately, to `data/logs/ai_log.jsonl`.

@@ -5,3 +5,4 @@ __pycache__/
 .env
 data/
 .gradio/
+backend/retrieval/rag-pipeline/store/
