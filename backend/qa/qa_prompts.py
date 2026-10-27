@@ -6,7 +6,83 @@ from pathlib import Path
 import re
 from typing import Any, Mapping
 
-from backend.interfaces import Chunk, Citation
+from backend.interfaces import ChatTurn, Chunk, Citation
+
+REFORMULATION_SYSTEM_PROMPT = """You are a conversational query reformulation assistant for a Course Study Buddy RAG system.
+Given a conversation history and a follow-up user question, rewrite the follow-up question into a standalone search query that contains all necessary technical context and nouns from previous turns.
+Do NOT answer the question. Only output the rewritten standalone query. If the query is already self-contained, return it unchanged.
+"""
+
+SECURITY_REFUSAL_TEXT = (
+    "Security Notice: Query contains instructions that violate grounding rules. "
+    "Answers must strictly remain within the scope of uploaded course materials."
+)
+
+INJECTION_PATTERNS = [
+    re.compile(r"ignore\s+(all\s+)?(previous|prior|above)\s+instructions?", re.IGNORECASE),
+    re.compile(r"system\s+prompt", re.IGNORECASE),
+    re.compile(r"act\s+as\s+(an?\s+)?ungrounded", re.IGNORECASE),
+    re.compile(r"disregard\s+(the\s+)?rules?", re.IGNORECASE),
+    re.compile(r"jailbreak", re.IGNORECASE),
+    re.compile(r"DAN\s+mode", re.IGNORECASE),
+    re.compile(r"developer\s+mode", re.IGNORECASE),
+]
+
+
+def sanitize_and_detect_injection(user_query: str) -> tuple[str, bool]:
+    """Inspect query for adversarial injection or jailbreak attempts.
+
+    Returns (sanitized_query, is_injection_detected).
+    """
+    clean_query = user_query.strip()
+    for pattern in INJECTION_PATTERNS:
+        if pattern.search(clean_query):
+            return clean_query, True
+    return clean_query, False
+
+
+def contextualize_query(
+    user_query: str,
+    history: list[ChatTurn],
+    llm: Any = None,
+) -> str:
+    """Rewrite follow-up queries using conversation history to ensure standalone retrieval.
+
+    If history is empty, returns user_query as is.
+    If an LLM client is available, prompts it to resolve coreferences and ambiguous follow-ups;
+    otherwise applies heuristic coreference rewriting.
+    """
+    if not history:
+        return user_query.strip()
+
+    # Heuristic detection of conversational follow-ups
+    q_lower = user_query.strip().lower()
+    follow_up_cues = ["it", "this", "that", "these", "those", "they", "point", "step", "again", "more detail", "elaborate", "why", "how so"]
+    is_ambiguous = any(re.search(r"\b" + re.escape(cue) + r"\b", q_lower) for cue in follow_up_cues) or len(user_query.split()) <= 4
+
+    if not is_ambiguous:
+        return user_query.strip()
+
+    if llm is not None and hasattr(llm, "complete"):
+        try:
+            history_summary = "\n".join(f"{turn.role.capitalize()}: {turn.content[:200]}" for turn in history[-4:])
+            prompt = f"Chat History:\n{history_summary}\n\nFollow-up Question: {user_query}\n\nStandalone Query:"
+            rewritten = llm.complete(
+                system=REFORMULATION_SYSTEM_PROMPT,
+                messages=[ChatTurn(role="user", content=prompt)],
+            )
+            cleaned = rewritten.strip().strip('"').strip("'")
+            if cleaned and len(cleaned) > 2:
+                return cleaned
+        except Exception:
+            pass  # Fall back to heuristic
+
+    # Deterministic heuristic fallback: extract key technical noun phrases from latest turn
+    latest_turn = history[-1].content
+    # Extract noun tokens (length > 3, alphanumeric)
+    keywords = [w for w in re.findall(r"[A-Za-z0-9_-]{4,}", latest_turn) if w.lower() not in {"this", "that", "with", "from", "have", "were", "what"}]
+    context_prefix = " ".join(keywords[:4]) if keywords else ""
+    return f"{context_prefix} {user_query}".strip()
 
 GROUNDED_QA_SYSTEM_PROMPT = """You are an AI Course Study Assistant for SE201: AI-Driven Software Engineering. Your goal is to answer student questions accurately, concisely, and strictly grounded in the provided course materials.
 
@@ -194,3 +270,56 @@ def is_out_of_scope_response(response_text: str) -> bool:
         or "i cannot find information regarding this topic in the provided course materials"
         in response_text.lower()
     )
+
+
+def compute_grounding_confidence(
+    citations: list[Citation],
+    chunks: list[Chunk | Mapping[str, Any]],
+    is_grounded: bool,
+) -> int:
+    """Compute a composite Grounding Confidence Score (0-100%).
+
+    Factors in chunk retrieval presence, similarity scores, valid citation count, and grounding flag.
+    """
+    if not is_grounded or not chunks:
+        return 0
+
+    score = 70  # Base grounded confidence
+
+    # Factor in validated citations
+    if citations:
+        score += min(len(citations) * 10, 20)
+    else:
+        score -= 20
+
+    # Factor in chunk retrieval scores if available
+    scores = [
+        c.score for c in chunks
+        if isinstance(c, Chunk) and c.score is not None
+    ]
+    if scores:
+        avg_sim = sum(scores) / len(scores)
+        if avg_sim >= 0.6:
+            score += 10
+        elif avg_sim < 0.35:
+            score -= 10
+
+    return max(0, min(100, score))
+
+
+def format_grounding_badge(confidence: int, primary_source: str = "") -> str:
+    """Generate a clean visual grounding badge for UI display."""
+    src_label = f" [Grounded in {primary_source}]" if primary_source else ""
+    if confidence >= 85:
+        return f"🟢 Grounding Confidence: {confidence}%{src_label}"
+    elif confidence >= 60:
+        return f"🟡 Grounding Confidence: {confidence}%{src_label}"
+    else:
+        return f"🔴 Grounding Confidence: {confidence}% (Low Grounding / Fallback)"
+
+
+def extract_supporting_excerpt(chunk_text: str, max_sentences: int = 2) -> str:
+    """Extract a concise 1-2 sentence supporting quote excerpt from chunk text."""
+    sentences = re.split(r"(?<=[.!?])\s+", chunk_text.strip())
+    excerpt = " ".join(sentences[:max_sentences]).strip()
+    return excerpt if excerpt else chunk_text[:200]
