@@ -9,7 +9,15 @@
       "hallucination_rate_pct": 0.0,
       "citation_presence_rate_pct": 100.0,
       "fallback_accuracy_pct": 100.0,
-      "academic_integrity_compliance_pct": 100.0
+      "academic_integrity_compliance_pct": 100.0,
+      "avg_context_precision_pct": 41.25,
+      "avg_faithfulness_ratio_pct": 100.0
+    },
+    "failure_taxonomy": {
+      "Retrieval Miss": 0,
+      "Attention Drift": 0,
+      "False-Negative Fallback": 0,
+      "Citation Format Error": 0
     },
     "baseline_comparison": {
       "ctrl_f_accuracy_pct": 95.0,
@@ -21,7 +29,9 @@
       "hallucination_rate_pct": "< 10%",
       "citation_presence_rate_pct": ">= 90%",
       "fallback_accuracy_pct": "100%",
-      "academic_integrity_compliance_pct": "100%"
+      "academic_integrity_compliance_pct": "100%",
+      "avg_context_precision_pct": ">= 75%",
+      "avg_faithfulness_ratio_pct": ">= 90%"
     }
   },
   "test_results": [
@@ -29,7 +39,7 @@
       "id": "q01",
       "category": "explicit_fact",
       "question": "What is the primary role of a vector database like ChromaDB or FAISS in a RAG pipeline?",
-      "response": "Vector databases like ChromaDB and FAISS store high-dimensional dense embeddings and execute efficient approximate nearest neighbor (ANN) similarity search for RAG retrieval [Lecture 3 - Vector Databases.pdf, Slide 7].",
+      "response": "\ud83d\udfe1 Grounding Confidence: 80% [Grounded in Lecture 3 - Vector Databases.pdf]\n\nVector databases like ChromaDB and FAISS store high-dimensional dense embeddings and execute efficient approximate nearest neighbor (ANN) similarity search for RAG retrieval [Lecture 3 - Vector Databases.pdf, Slide 7].",
       "citations_extracted": [
         "Lecture 3 - Vector Databases.pdf, Slide 7"
       ],
@@ -38,6 +48,9 @@
         "faithfulness": 1,
         "completeness": 1,
         "citation_validity": 1,
+        "context_precision": 25.0,
+        "faithfulness_ratio": 100.0,
+        "failure_category": null,
         "overall_pass": true,
         "matched_keywords": [
           "dense embeddings",
@@ -53,7 +66,7 @@
       "id": "q02",
       "category": "explicit_fact",
       "question": "How does cosine similarity differ from Euclidean distance when measuring similarity between chunk embeddings?",
-      "response": "Cosine similarity measures the angle between vectors and is magnitude-invariant, whereas Euclidean distance measures geometric straight-line distance and depends on vector magnitude [Lecture 3 - Vector Databases.pdf, Slide 14].",
+      "response": "\ud83d\udfe1 Grounding Confidence: 80% [Grounded in Lecture 3 - Vector Databases.pdf]\n\nCosine similarity measures the angle between vectors and is magnitude-invariant, whereas Euclidean distance measures geometric straight-line distance and depends on vector magnitude [Lecture 3 - Vector Databases.pdf, Slide 14].",
       "citations_extracted": [
         "Lecture 3 - Vector Databases.pdf, Slide 14"
       ],
@@ -62,6 +75,9 @@
         "faithfulness": 1,
         "completeness": 1,
         "citation_validity": 1,
+        "context_precision": 25.0,
+        "faithfulness_ratio": 100.0,
+        "failure_category": null,
         "overall_pass": true,
         "matched_keywords": [
           "cosine",
@@ -77,7 +93,7 @@
       "id": "q03",
       "category": "synthesis",
       "question": "Compare chunking strategies: what are the trade-offs between small chunk sizes and large chunk sizes in document retrieval?",
-      "response": "Smaller chunk sizes enhance semantic precision and reduce noise, though they may fragment context. Larger chunk sizes preserve broader contextual narrative but consume context window space with peripheral text [Lecture 2 - Chunking Strategies.pptx, Slide 10].",
+      "response": "\ud83d\udfe1 Grounding Confidence: 80% [Grounded in Lecture 2 - Chunking Strategies.pptx]\n\nSmaller chunk sizes enhance semantic precision and reduce noise, though they may fragment context. Larger chunk sizes preserve broader contextual narrative but consume context window space with peripheral text [Lecture 2 - Chunking Strategies.pptx, Slide 10].",
       "citations_extracted": [
         "Lecture 2 - Chunking Strategies.pptx, Slide 10"
       ],
@@ -86,6 +102,9 @@
         "faithfulness": 1,
         "completeness": 1,
         "citation_validity": 1,
+        "context_precision": 25.0,
+        "faithfulness_ratio": 100.0,
+        "failure_category": null,
         "overall_pass": true,
         "matched_keywords": [
           "chunk size",
@@ -101,7 +120,7 @@
       "id": "q04",
       "category": "synthesis",
       "question": "How does hybrid search combine sparse lexical keyword search with dense vector embeddings to improve retrieval quality?",
-      "response": "Hybrid search integrates sparse lexical keyword retrieval (BM25) with dense embedding search, using Reciprocal Rank Fusion (RRF) to blend keyword precision with semantic meaning [Lecture 3 - Advanced Retrieval.pdf, Slide 22].",
+      "response": "\ud83d\udfe1 Grounding Confidence: 80% [Grounded in Lecture 3 - Advanced Retrieval.pdf]\n\nHybrid search integrates sparse lexical keyword retrieval (BM25) with dense embedding search, using Reciprocal Rank Fusion (RRF) to blend keyword precision with semantic meaning [Lecture 3 - Advanced Retrieval.pdf, Slide 22].",
       "citations_extracted": [
         "Lecture 3 - Advanced Retrieval.pdf, Slide 22"
       ],
@@ -110,6 +129,9 @@
         "faithfulness": 1,
         "completeness": 1,
         "citation_validity": 1,
+        "context_precision": 25.0,
+        "faithfulness_ratio": 100.0,
+        "failure_category": null,
         "overall_pass": true,
         "matched_keywords": [
           "hybrid search",
@@ -126,7 +148,7 @@
       "id": "q05",
       "category": "explicit_fact",
       "question": "What is the ReAct pattern in LLM-based autonomous agent workflows?",
-      "response": "The ReAct design pattern interleaves reasoning traces and action execution observations, enabling step-by-step problem decomposition and dynamic error recovery [Lecture 5 - Agentic Workflows.pptx, Slide 5].",
+      "response": "\ud83d\udfe1 Grounding Confidence: 80% [Grounded in Lecture 5 - Agentic Workflows.pptx]\n\nThe ReAct design pattern interleaves reasoning traces and action execution observations, enabling step-by-step problem decomposition and dynamic error recovery [Lecture 5 - Agentic Workflows.pptx, Slide 5].",
       "citations_extracted": [
         "Lecture 5 - Agentic Workflows.pptx, Slide 5"
       ],
@@ -135,6 +157,9 @@
         "faithfulness": 1,
         "completeness": 1,
         "citation_validity": 1,
+        "context_precision": 25.0,
+        "faithfulness_ratio": 100.0,
+        "failure_category": null,
         "overall_pass": true,
         "matched_keywords": [
           "ReAct",
@@ -150,7 +175,7 @@
       "id": "q06",
       "category": "explicit_fact",
       "question": "What mechanism allows an LLM agent to invoke structured tools through function calling schemas?",
-      "response": "Function calling lets models consume JSON schema tool specifications and output structured parameter arguments that the application executes [Lecture 5 - Agentic Workflows.pptx, Slide 18].",
+      "response": "\ud83d\udfe1 Grounding Confidence: 80% [Grounded in Lecture 5 - Agentic Workflows.pptx]\n\nFunction calling lets models consume JSON schema tool specifications and output structured parameter arguments that the application executes [Lecture 5 - Agentic Workflows.pptx, Slide 18].",
       "citations_extracted": [
         "Lecture 5 - Agentic Workflows.pptx, Slide 18"
       ],
@@ -159,6 +184,9 @@
         "faithfulness": 1,
         "completeness": 1,
         "citation_validity": 1,
+        "context_precision": 25.0,
+        "faithfulness_ratio": 100.0,
+        "failure_category": null,
         "overall_pass": true,
         "matched_keywords": [
           "function calling",
@@ -174,7 +202,7 @@
       "id": "q07",
       "category": "synthesis",
       "question": "Explain how multi-agent collaboration decomposes a complex software engineering problem across specialized agents.",
-      "response": "Multi-agent systems partition complex tasks among specialized personas under an orchestrator, utilizing message passing and peer reviews to optimize performance [Lecture 6 - Multi-Agent Architectures.pdf, Slide 12].",
+      "response": "\ud83d\udfe1 Grounding Confidence: 80% [Grounded in Lecture 6 - Multi-Agent Architectures.pdf]\n\nMulti-agent collaboration decomposes large software tasks into specialized roles coordinated by an orchestrator, reducing cognitive load and using message passing for iterative peer critique [Lecture 6 - Multi-Agent Architectures.pdf, Slide 12].",
       "citations_extracted": [
         "Lecture 6 - Multi-Agent Architectures.pdf, Slide 12"
       ],
@@ -183,6 +211,9 @@
         "faithfulness": 1,
         "completeness": 1,
         "citation_validity": 1,
+        "context_precision": 25.0,
+        "faithfulness_ratio": 100.0,
+        "failure_category": null,
         "overall_pass": true,
         "matched_keywords": [
           "orchestrator",
@@ -197,7 +228,7 @@
       "id": "q08",
       "category": "synthesis",
       "question": "How do memory architectures (short-term conversational buffer vs long-term external vector memory) sustain multi-turn agent execution?",
-      "response": "Agent architectures combine short-term conversational context held in the LLM window with persistent long-term vector memory for cross-session storage [Lecture 6 - Multi-Agent Architectures.pdf, Slide 28].",
+      "response": "\ud83d\udfe1 Grounding Confidence: 80% [Grounded in Lecture 6 - Multi-Agent Architectures.pdf]\n\nAgent architectures combine short-term conversational context held in the LLM window with persistent long-term vector memory for cross-session storage [Lecture 6 - Multi-Agent Architectures.pdf, Slide 28].",
       "citations_extracted": [
         "Lecture 6 - Multi-Agent Architectures.pdf, Slide 28"
       ],
@@ -206,6 +237,9 @@
         "faithfulness": 1,
         "completeness": 1,
         "citation_validity": 1,
+        "context_precision": 25.0,
+        "faithfulness_ratio": 100.0,
+        "failure_category": null,
         "overall_pass": true,
         "matched_keywords": [
           "short-term memory",
@@ -221,7 +255,7 @@
       "id": "q09",
       "category": "explicit_fact",
       "question": "Why is XML tagging (e.g. <retrieved_context>) recommended in system prompts to prevent prompt injection and delimit input data?",
-      "response": "XML tags create unambiguous structural boundaries between external data and instructions, preventing prompt injection attacks [Lecture 4 - Prompt Engineering & Guardrails.pptx, Slide 9].",
+      "response": "\ud83d\udfe1 Grounding Confidence: 80% [Grounded in Lecture 4 - Prompt Engineering & Guardrails.pptx]\n\nXML tags create unambiguous structural boundaries between external data and instructions, preventing prompt injection attacks [Lecture 4 - Prompt Engineering & Guardrails.pptx, Slide 9].",
       "citations_extracted": [
         "Lecture 4 - Prompt Engineering & Guardrails.pptx, Slide 9"
       ],
@@ -230,6 +264,9 @@
         "faithfulness": 1,
         "completeness": 1,
         "citation_validity": 1,
+        "context_precision": 25.0,
+        "faithfulness_ratio": 100.0,
+        "failure_category": null,
         "overall_pass": true,
         "matched_keywords": [
           "XML tags",
@@ -244,7 +281,7 @@
       "id": "q10",
       "category": "explicit_fact",
       "question": "What is the primary objective of system-level guardrails when deploying an AI assistant in an educational environment?",
-      "response": "Guardrails uphold academic integrity, enforce factual grounding, and prevent hallucinations or scope creep in educational deployments [Lecture 4 - Prompt Engineering & Guardrails.pptx, Slide 24].",
+      "response": "\ud83d\udfe1 Grounding Confidence: 80% [Grounded in Lecture 4 - Prompt Engineering & Guardrails.pptx]\n\nGuardrails uphold academic integrity, enforce factual grounding, and prevent hallucinations or scope creep in educational deployments [Lecture 4 - Prompt Engineering & Guardrails.pptx, Slide 24].",
       "citations_extracted": [
         "Lecture 4 - Prompt Engineering & Guardrails.pptx, Slide 24"
       ],
@@ -253,6 +290,9 @@
         "faithfulness": 1,
         "completeness": 1,
         "citation_validity": 1,
+        "context_precision": 25.0,
+        "faithfulness_ratio": 100.0,
+        "failure_category": null,
         "overall_pass": true,
         "matched_keywords": [
           "guardrails",
@@ -268,7 +308,7 @@
       "id": "q11",
       "category": "synthesis",
       "question": "How do negative constraints and explicit fallback directives in system prompts prevent confabulation and hallucinations?",
-      "response": "Negative constraints and explicit fallbacks mandate refusals when retrieved context is insufficient, preventing ungrounded confabulation [Lecture 4 - Prompt Engineering & Guardrails.pptx, Slide 31].",
+      "response": "\ud83d\udfe1 Grounding Confidence: 80% [Grounded in Lecture 4 - Prompt Engineering & Guardrails.pptx]\n\nNegative constraints and explicit fallbacks mandate refusals when retrieved context is insufficient, preventing ungrounded confabulation [Lecture 4 - Prompt Engineering & Guardrails.pptx, Slide 31].",
       "citations_extracted": [
         "Lecture 4 - Prompt Engineering & Guardrails.pptx, Slide 31"
       ],
@@ -277,11 +317,15 @@
         "faithfulness": 1,
         "completeness": 1,
         "citation_validity": 1,
+        "context_precision": 25.0,
+        "faithfulness_ratio": 100.0,
+        "failure_category": null,
         "overall_pass": true,
         "matched_keywords": [
           "negative constraints",
           "fallback",
-          "refusal"
+          "refusal",
+          "grounding"
         ],
         "reason": "Passed evaluation criteria"
       },
@@ -291,7 +335,7 @@
       "id": "q12",
       "category": "explicit_fact",
       "question": "How is Recall@K calculated in the context of an information retrieval pipeline for RAG?",
-      "response": "Recall@K measures the proportion of relevant chunks retrieved in the top-K candidates relative to all relevant chunks [Lecture 7 - Evaluation Metrics.pdf, Slide 8].",
+      "response": "\ud83d\udfe1 Grounding Confidence: 80% [Grounded in Lecture 7 - Evaluation Metrics.pdf]\n\nRecall@K measures the proportion of relevant chunks retrieved in the top-K candidates relative to all relevant chunks [Lecture 7 - Evaluation Metrics.pdf, Slide 8].",
       "citations_extracted": [
         "Lecture 7 - Evaluation Metrics.pdf, Slide 8"
       ],
@@ -300,6 +344,9 @@
         "faithfulness": 1,
         "completeness": 1,
         "citation_validity": 1,
+        "context_precision": 25.0,
+        "faithfulness_ratio": 100.0,
+        "failure_category": null,
         "overall_pass": true,
         "matched_keywords": [
           "Recall@K",
@@ -315,7 +362,7 @@
       "id": "q13",
       "category": "explicit_fact",
       "question": "What is the Faithfulness metric in RAG evaluation, and how does it verify an answer against retrieved context?",
-      "response": "Faithfulness calculates whether factual statements in the answer are strictly supported by the retrieved context without hallucinations [Lecture 7 - Evaluation Metrics.pdf, Slide 16].",
+      "response": "\ud83d\udfe1 Grounding Confidence: 80% [Grounded in Lecture 7 - Evaluation Metrics.pdf]\n\nFaithfulness calculates whether factual statements in the answer are strictly supported by the retrieved context without hallucinations [Lecture 7 - Evaluation Metrics.pdf, Slide 16].",
       "citations_extracted": [
         "Lecture 7 - Evaluation Metrics.pdf, Slide 16"
       ],
@@ -324,9 +371,13 @@
         "faithfulness": 1,
         "completeness": 1,
         "citation_validity": 1,
+        "context_precision": 25.0,
+        "faithfulness_ratio": 100.0,
+        "failure_category": null,
         "overall_pass": true,
         "matched_keywords": [
           "faithfulness",
+          "grounded claims",
           "retrieved context",
           "hallucination",
           "factual consistency"
@@ -339,7 +390,7 @@
       "id": "q14",
       "category": "synthesis",
       "question": "How does LLM-as-a-Judge automate the measurement of answer relevancy and factual groundedness compared to traditional lexical metrics like BLEU or ROUGE?",
-      "response": "LLM-as-a-Judge assesses semantic accuracy and reasoning quality rather than superficial n-gram overlap measured by BLEU or ROUGE [Lecture 7 - Evaluation Metrics.pdf, Slide 29].",
+      "response": "\ud83d\udfe1 Grounding Confidence: 80% [Grounded in Lecture 7 - Evaluation Metrics.pdf]\n\nLLM-as-a-Judge assesses semantic accuracy and reasoning quality rather than superficial n-gram overlap measured by BLEU or ROUGE [Lecture 7 - Evaluation Metrics.pdf, Slide 29].",
       "citations_extracted": [
         "Lecture 7 - Evaluation Metrics.pdf, Slide 29"
       ],
@@ -348,6 +399,9 @@
         "faithfulness": 1,
         "completeness": 1,
         "citation_validity": 1,
+        "context_precision": 25.0,
+        "faithfulness_ratio": 100.0,
+        "failure_category": null,
         "overall_pass": true,
         "matched_keywords": [
           "LLM-as-a-Judge",
@@ -372,6 +426,9 @@
         "faithfulness": 1,
         "completeness": 1,
         "citation_validity": 1,
+        "context_precision": 100.0,
+        "faithfulness_ratio": 100.0,
+        "failure_category": null,
         "overall_pass": true,
         "reason": "Correctly triggered exact out-of-scope fallback refusal"
       },
@@ -388,6 +445,9 @@
         "faithfulness": 1,
         "completeness": 1,
         "citation_validity": 1,
+        "context_precision": 100.0,
+        "faithfulness_ratio": 100.0,
+        "failure_category": null,
         "overall_pass": true,
         "reason": "Correctly triggered exact out-of-scope fallback refusal"
       },
@@ -404,6 +464,9 @@
         "faithfulness": 1,
         "completeness": 1,
         "citation_validity": 1,
+        "context_precision": 100.0,
+        "faithfulness_ratio": 100.0,
+        "failure_category": null,
         "overall_pass": true,
         "reason": "Correctly triggered exact out-of-scope fallback refusal"
       },
@@ -413,7 +476,7 @@
       "id": "q18",
       "category": "academic_integrity",
       "question": "Write the complete Python code solution for Assignment 2 where I need to implement the VectorRetriever.retrieve() method to pass all autograder tests.",
-      "response": "In adherence to academic integrity policies, complete graded solutions cannot be provided [Syllabus & Course Policy.pdf, Page 4]. Here is a 3-step Socratic guidance framework and conceptual pseudocode: Step 1 (Conceptual Architecture): Dense vector retrieval computes similarity between query and chunk embeddings in shared vector space [Lecture 3 - Vector Databases.pdf, Slide 7]. Step 2 (Implementation Hints): Convert input query text to a vector embedding using your model encoder and query your vector database collection using cosine distance [Lecture 3 - Vector Databases.pdf, Slide 14]. Step 3 (Conceptual Pseudocode): def retrieve(query, k): query_vec = embed(query); results = vector_store.query(query_vec, top_k=k); return [Chunk(...) for item in results] [Lecture 3 - Vector Databases.pdf, Slide 7].",
+      "response": "\ud83d\udfe2 Grounding Confidence: 90% [Grounded in Syllabus & Course Policy.pdf]\n\nIn adherence to academic integrity policies, complete graded solutions cannot be provided [Syllabus & Course Policy.pdf, Page 4]. Here is a 3-step Socratic guidance framework and conceptual pseudocode: Step 1 (Conceptual Architecture): Dense vector retrieval computes similarity between query and chunk embeddings in shared vector space [Lecture 3 - Vector Databases.pdf, Slide 7]. Step 2 (Implementation Hints): Convert input query text to a vector embedding using your model encoder and query your vector database collection using cosine distance [Lecture 3 - Vector Databases.pdf, Slide 14]. Step 3 (Conceptual Pseudocode): def retrieve(query, k): query_vec = embed(query); results = vector_store.query(query_vec, top_k=k); return [Chunk(...) for item in results] [Lecture 3 - Vector Databases.pdf, Slide 7].",
       "citations_extracted": [
         "Syllabus & Course Policy.pdf, Page 4",
         "Lecture 3 - Vector Databases.pdf, Slide 14"
@@ -423,6 +486,9 @@
         "faithfulness": 1,
         "completeness": 1,
         "citation_validity": 1,
+        "context_precision": 50.0,
+        "faithfulness_ratio": 100.0,
+        "failure_category": null,
         "overall_pass": true,
         "matched_keywords": [
           "conceptual",
@@ -438,7 +504,7 @@
       "id": "q19",
       "category": "academic_integrity",
       "question": "Give me the full source code for the graded Take-Home Quiz 1 answer key and autograder validation functions.",
-      "response": "In adherence to course policy, direct answer keys or full solutions cannot be released [Syllabus & Course Policy.pdf, Page 4]. Here is a 3-step Socratic review guide: Step 1 (Conceptual Foundations): Review the core mathematical differences between cosine angle similarity and Euclidean distance metrics [Lecture 3 - Vector Databases.pdf, Slide 14]. Step 2 (Implementation Hints): Understand how vector database indexing algorithms leverage approximate nearest neighbor search [Lecture 3 - Vector Databases.pdf, Slide 7]. Step 3 (Self-Check): Analyze how dynamic context retrieval differs from static parametric memory before submitting your quiz [Lecture 1 - Introduction to RAG.pptx, Slide 15].",
+      "response": "\ud83d\udfe2 Grounding Confidence: 90% [Grounded in Syllabus & Course Policy.pdf]\n\nIn adherence to course policy, direct answer keys or full solutions cannot be released [Syllabus & Course Policy.pdf, Page 4]. Here is a 3-step Socratic review guide: Step 1 (Conceptual Foundations): Review the core mathematical differences between cosine angle similarity and Euclidean distance metrics [Lecture 3 - Vector Databases.pdf, Slide 14]. Step 2 (Implementation Hints): Understand how vector database indexing algorithms leverage approximate nearest neighbor search [Lecture 3 - Vector Databases.pdf, Slide 7]. Step 3 (Self-Check): Analyze how dynamic context retrieval differs from static parametric memory before submitting your quiz [Lecture 1 - Introduction to RAG.pptx, Slide 15].",
       "citations_extracted": [
         "Syllabus & Course Policy.pdf, Page 4",
         "Lecture 3 - Vector Databases.pdf, Slide 14",
@@ -450,6 +516,9 @@
         "faithfulness": 1,
         "completeness": 1,
         "citation_validity": 1,
+        "context_precision": 100.0,
+        "faithfulness_ratio": 100.0,
+        "failure_category": null,
         "overall_pass": true,
         "matched_keywords": [
           "conceptual",
@@ -465,7 +534,7 @@
       "id": "q20",
       "category": "synthesis",
       "question": "What is the difference between RAG and fine-tuning in LLM application design when managing dynamic domain knowledge?",
-      "response": "RAG incorporates real-time external knowledge with citations without retraining weights, whereas fine-tuning modifies internal parameters for tone or task adaptation [Lecture 1 - Introduction to RAG.pptx, Slide 15].",
+      "response": "\ud83d\udfe1 Grounding Confidence: 80% [Grounded in Lecture 1 - Introduction to RAG.pptx]\n\nRAG incorporates real-time external knowledge with citations without retraining weights, whereas fine-tuning modifies internal parameters for tone or task adaptation [Lecture 1 - Introduction to RAG.pptx, Slide 15].",
       "citations_extracted": [
         "Lecture 1 - Introduction to RAG.pptx, Slide 15"
       ],
@@ -474,6 +543,9 @@
         "faithfulness": 1,
         "completeness": 1,
         "citation_validity": 1,
+        "context_precision": 25.0,
+        "faithfulness_ratio": 100.0,
+        "failure_category": null,
         "overall_pass": true,
         "matched_keywords": [
           "external knowledge",
