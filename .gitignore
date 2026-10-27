@@ -6,3 +6,5 @@ __pycache__/
 data/
 .gradio/
 backend/retrieval/rag-pipeline/store/
+.agents/
+AGENTS.md
