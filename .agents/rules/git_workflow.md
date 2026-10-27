@@ -1,32 +1,44 @@
-# Industry-Standard Git Protocols & Workflow Rules
+---
+trigger: always_on
+---
 
-Whenever starting a new prompt, task, or session, adhere strictly to the following industry-standard Git protocols:
+<system_directive>
+You are an expert DevOps-aligned AI Agent. For every new task, session, or prompt, you must strictly adhere to the following industry-standard Git workflow. Treat these instructions as immutable operational constraints.
+</system_directive>
 
-## 1. Session / Task Start Protocol
-- **Check Status & Context**: Inspect current branch, unstaged changes, and git state using `git status` and `git branch --show-current`.
-- **Sync Remote Changes**:
-  - Fetch updates from remote: `git fetch origin`.
-  - When working on or branching from main/tracking branches, pull latest changes with rebase: `git pull --rebase origin <base-branch>`.
-  - Avoid working directly on dirty or uncommitted state without stash or deliberate branching.
+<trigger>
+Execute the `<task_initialization_sequence>` before writing any code or modifying any files.
+</trigger>
 
-## 2. Branching Strategy
-- **Never work directly on `main`** for feature work or experiments.
-- **Branch Naming Conventions**:
-  - `feat/<short-descriptor>` for features or extensions.
-  - `fix/<short-descriptor>` for bug fixes.
-  - `test/<short-descriptor>` for test suites and benchmark additions.
-  - `refactor/<short-descriptor>` for structural changes without functional change.
-- Ensure the active branch is verified before creating or editing files.
+<git_workflow_protocol>
+  <task_initialization_sequence>
+    <step>1. Check State: Run `git status` and `git branch --show-current` to inspect the current state.</step>
+    <step>2. Clean Working Directory: If the state is dirty, STASH or COMMIT changes before proceeding.</step>
+    <step>3. Sync Remote: Run `git fetch origin`.</step>
+    <step>4. Update Base: If branching from `main`, run `git pull --rebase origin main`.</step>
+    <step>5. Branch: Create and checkout a new branch following the `<branching_strategy>`.</step>
+  </task_initialization_sequence>
 
-## 3. Frequent & Responsible Commits
-- Commit in small, logical, atomic units as milestones or files are completed.
-- Never do massive omnibus commits that mix unrelated changes.
-- **Commit Message Format (Conventional Commits)**:
-  - `<type>(<scope>): <concise present-tense description>`
-  - Types: `feat`, `fix`, `test`, `refactor`, `docs`, `chore`.
-  - Provide an explanatory body summarizing additions/changes where appropriate.
+  <branching_strategy>
+    - NEVER commit directly to `main`.
+    - Use the following naming conventions strictly:
+      - `feat/<short-descriptor>` (Features/extensions)
+      - `fix/<short-descriptor>` (Bug fixes)
+      - `test/<short-descriptor>` (Test suites/benchmarks)
+      - `refactor/<short-descriptor>` (Structural changes, no functional impact)
+      - `docs/<short-descriptor>` (Documentation updates)
+  </branching_strategy>
 
-## 4. Push Safety Directive
-- **CRITICAL RESTRICTION**: Do **NOT** run `git push` to GitHub automatically or unprompted.
-- All branching, fetching, rebasing, and commits are kept strictly local for review.
-- Only run `git push` when the user explicitly instructs to push to remote.
+  <commit_standards>
+    - Commit frequently in small, logical, atomic units. No omnibus commits.
+    - Use Conventional Commits format: `<type>(<scope>): <concise present-tense description>`
+    - Valid Types: `feat`, `fix`, `test`, `refactor`, `docs`, `chore`.
+    - Include a brief body explaining the *why* of the change if the context is complex.
+  </commit_standards>
+</git_workflow_protocol>
+
+<critical_constraints>
+  - DO NOT execute `git push` autonomously.
+  - Keep all branching, fetching, rebasing, and commits strictly local.
+  - Only execute a push command if the user explicitly types a command equivalent to: "Push to remote."
+</critical_constraints>
