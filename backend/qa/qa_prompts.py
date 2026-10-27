@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 import re
 from typing import Any, Mapping
 
@@ -96,13 +97,65 @@ def build_qa_prompt(user_query: str, chunks: list[Chunk | Mapping[str, Any]]) ->
 CITATION_PATTERN = re.compile(r"\[([^,\]]+),\s*([^\]]+)\]")
 
 
+def _normalize_loc(loc: str) -> str:
+    """Normalize location string for robust matching, e.g. 'Slide 5' -> 'slide 5', 'Page 12' -> 'p.12'."""
+    s = loc.strip().lower()
+    s = re.sub(r"^page\s*", "p.", s)
+    s = re.sub(r"^p\.\s*", "p.", s)
+    s = re.sub(r"^slide\s*", "slide ", s)
+    return s
+
+
+def verify_citation_against_chunks(
+    source: str,
+    location: str,
+    chunks: list[Chunk | Mapping[str, Any]],
+) -> tuple[bool, str]:
+    """Verify if a cited source and slide/page location exists in chunks_used.
+
+    Returns (is_valid, matching_quote).
+    """
+    norm_source = source.strip().lower()
+    norm_loc = _normalize_loc(location)
+    loc_digits = re.findall(r"\d+", norm_loc)
+
+    for c in chunks:
+        c_source = c.source_file if isinstance(c, Chunk) else (
+            c.get("source_file") or c.get("source_title") or c.get("source") or ""
+        )
+        c_loc = c.location if isinstance(c, Chunk) else (
+            c.get("location") or c.get("slide_or_page") or str(c.get("page") or "")
+        )
+        norm_c_source = c_source.strip().lower()
+        norm_c_loc = _normalize_loc(c_loc)
+        c_digits = re.findall(r"\d+", norm_c_loc)
+
+        # Check source filename or title overlap
+        source_matches = (
+            norm_source in norm_c_source
+            or norm_c_source in norm_source
+            or Path(norm_source).stem == Path(norm_c_source).stem
+        )
+        if not source_matches:
+            continue
+
+        # Check location match (either normalized match or matching slide/page number)
+        loc_matches = (norm_loc == norm_c_loc) or (loc_digits and c_digits and loc_digits[0] == c_digits[0])
+        if loc_matches:
+            quote = c.text if isinstance(c, Chunk) else c.get("text", "")
+            return True, quote
+
+    return False, ""
+
+
 def extract_citations_from_text(
     response_text: str,
     chunks: list[Chunk | Mapping[str, Any]] | None = None,
 ) -> list[Citation]:
     """Parse inline citations of the form `[Source Title, Section/Slide/Page #]` from response text.
 
-    Optionally matches against the retrieved chunks to associate supporting quote text.
+    If chunks are provided, programmatically verifies each citation against chunks_used metadata.
+    Invalid citations that hallucinate non-existent slide/page numbers are dropped.
     """
     citations: list[Citation] = []
     seen = set()
@@ -115,19 +168,13 @@ def extract_citations_from_text(
             continue
         seen.add(key)
 
-        # Find best matching chunk quote if available
         quote = ""
-        if chunks:
-            for c in chunks:
-                c_source = c.source_file if isinstance(c, Chunk) else (
-                    c.get("source_title") or c.get("source_file") or c.get("source") or ""
-                )
-                c_loc = c.location if isinstance(c, Chunk) else (
-                    c.get("slide_or_page") or c.get("location") or str(c.get("page") or "")
-                )
-                if source.lower() in c_source.lower() or c_source.lower() in source.lower():
-                    quote = c.text if isinstance(c, Chunk) else c.get("text", "")
-                    break
+        if chunks is not None:
+            is_valid, matched_quote = verify_citation_against_chunks(source, location, chunks)
+            if not is_valid:
+                # Flagged as invalid / hallucinated citation not present in retrieved context
+                continue
+            quote = matched_quote
 
         citations.append(Citation(source_file=source, location=location, quote=quote))
 
