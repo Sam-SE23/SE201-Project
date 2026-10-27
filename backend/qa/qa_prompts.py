@@ -20,12 +20,12 @@ SECURITY_REFUSAL_TEXT = (
 
 INJECTION_PATTERNS = [
     re.compile(r"ignore\s+(all\s+)?(previous|prior|above)\s+instructions?", re.IGNORECASE),
-    re.compile(r"system\s+prompt", re.IGNORECASE),
-    re.compile(r"act\s+as\s+(an?\s+)?ungrounded", re.IGNORECASE),
-    re.compile(r"disregard\s+(the\s+)?rules?", re.IGNORECASE),
-    re.compile(r"jailbreak", re.IGNORECASE),
-    re.compile(r"DAN\s+mode", re.IGNORECASE),
-    re.compile(r"developer\s+mode", re.IGNORECASE),
+    re.compile(r"(reveal|print|show|leak|ignore|bypass|override)\s+(the\s+)?(system\s+prompt|guardrails?)", re.IGNORECASE),
+    re.compile(r"act\s+as\s+(an?\s+)?(ungrounded|unrestricted|adversarial)", re.IGNORECASE),
+    re.compile(r"disregard\s+(all\s+)?(the\s+)?(rules?|instructions?|constraints?)", re.IGNORECASE),
+    re.compile(r"\bjailbreak\b", re.IGNORECASE),
+    re.compile(r"\bDAN\s+mode\b", re.IGNORECASE),
+    re.compile(r"\bdeveloper\s+mode\b", re.IGNORECASE),
 ]
 
 
