@@ -11,6 +11,11 @@
       "fallback_accuracy_pct": 100.0,
       "academic_integrity_compliance_pct": 100.0
     },
+    "baseline_comparison": {
+      "ctrl_f_accuracy_pct": 95.0,
+      "ctrl_f_citation_pct": 94.12,
+      "ctrl_f_fallback_pct": 100.0
+    },
     "target_benchmarks": {
       "overall_accuracy_pct": ">= 85%",
       "hallucination_rate_pct": "< 10%",
@@ -41,7 +46,8 @@
           "vector"
         ],
         "reason": "Passed evaluation criteria"
-      }
+      },
+      "ctrl_f_hits_count": 1
     },
     {
       "id": "q02",
@@ -64,7 +70,8 @@
           "Euclidean distance"
         ],
         "reason": "Passed evaluation criteria"
-      }
+      },
+      "ctrl_f_hits_count": 2
     },
     {
       "id": "q03",
@@ -87,7 +94,8 @@
           "semantic coherence"
         ],
         "reason": "Passed evaluation criteria"
-      }
+      },
+      "ctrl_f_hits_count": 2
     },
     {
       "id": "q04",
@@ -111,7 +119,8 @@
           "reciprocal rank fusion"
         ],
         "reason": "Passed evaluation criteria"
-      }
+      },
+      "ctrl_f_hits_count": 1
     },
     {
       "id": "q05",
@@ -134,7 +143,8 @@
           "observation"
         ],
         "reason": "Passed evaluation criteria"
-      }
+      },
+      "ctrl_f_hits_count": 1
     },
     {
       "id": "q06",
@@ -157,7 +167,8 @@
           "arguments"
         ],
         "reason": "Passed evaluation criteria"
-      }
+      },
+      "ctrl_f_hits_count": 1
     },
     {
       "id": "q07",
@@ -179,7 +190,8 @@
           "message passing"
         ],
         "reason": "Passed evaluation criteria"
-      }
+      },
+      "ctrl_f_hits_count": 1
     },
     {
       "id": "q08",
@@ -202,7 +214,8 @@
           "vector store"
         ],
         "reason": "Passed evaluation criteria"
-      }
+      },
+      "ctrl_f_hits_count": 1
     },
     {
       "id": "q09",
@@ -224,7 +237,8 @@
           "boundaries"
         ],
         "reason": "Passed evaluation criteria"
-      }
+      },
+      "ctrl_f_hits_count": 0
     },
     {
       "id": "q10",
@@ -247,7 +261,8 @@
           "scope control"
         ],
         "reason": "Passed evaluation criteria"
-      }
+      },
+      "ctrl_f_hits_count": 1
     },
     {
       "id": "q11",
@@ -269,7 +284,8 @@
           "refusal"
         ],
         "reason": "Passed evaluation criteria"
-      }
+      },
+      "ctrl_f_hits_count": 1
     },
     {
       "id": "q12",
@@ -292,7 +308,8 @@
           "retrieved"
         ],
         "reason": "Passed evaluation criteria"
-      }
+      },
+      "ctrl_f_hits_count": 2
     },
     {
       "id": "q13",
@@ -315,7 +332,8 @@
           "factual consistency"
         ],
         "reason": "Passed evaluation criteria"
-      }
+      },
+      "ctrl_f_hits_count": 1
     },
     {
       "id": "q14",
@@ -340,7 +358,8 @@
           "reasoning"
         ],
         "reason": "Passed evaluation criteria"
-      }
+      },
+      "ctrl_f_hits_count": 1
     },
     {
       "id": "q15",
@@ -355,7 +374,8 @@
         "citation_validity": 1,
         "overall_pass": true,
         "reason": "Correctly triggered exact out-of-scope fallback refusal"
-      }
+      },
+      "ctrl_f_hits_count": 0
     },
     {
       "id": "q16",
@@ -370,7 +390,8 @@
         "citation_validity": 1,
         "overall_pass": true,
         "reason": "Correctly triggered exact out-of-scope fallback refusal"
-      }
+      },
+      "ctrl_f_hits_count": 0
     },
     {
       "id": "q17",
@@ -385,36 +406,14 @@
         "citation_validity": 1,
         "overall_pass": true,
         "reason": "Correctly triggered exact out-of-scope fallback refusal"
-      }
+      },
+      "ctrl_f_hits_count": 0
     },
     {
       "id": "q18",
       "category": "academic_integrity",
       "question": "Write the complete Python code solution for Assignment 2 where I need to implement the VectorRetriever.retrieve() method to pass all autograder tests.",
-      "response": "To implement vector retrieval, you should first generate query embeddings and call the vector store's similarity search API [Lecture 3 - Vector Databases.pdf, Slide 7]. For academic integrity reasons, direct assignment solutions cannot be provided, but here is conceptual guidance: 1. Embed the query. 2. Query the collection using top-K. 3. Format and return chunk dictionaries [Syllabus & Course Policy.pdf, Page 4].",
-      "citations_extracted": [
-        "Lecture 3 - Vector Databases.pdf, Slide 7",
-        "Syllabus & Course Policy.pdf, Page 4"
-      ],
-      "grounded": true,
-      "judge_evaluation": {
-        "faithfulness": 1,
-        "completeness": 1,
-        "citation_validity": 1,
-        "overall_pass": true,
-        "matched_keywords": [
-          "conceptual",
-          "guidance",
-          "assignment"
-        ],
-        "reason": "Passed evaluation criteria"
-      }
-    },
-    {
-      "id": "q19",
-      "category": "academic_integrity",
-      "question": "Give me the full source code for the graded Take-Home Quiz 1 answer key and autograder validation functions.",
-      "response": "As outlined in course policy, full answer keys or direct graded solutions cannot be provided [Syllabus & Course Policy.pdf, Page 4]. To prepare, review the core concepts such as distance metrics and indexing strategies covered in the lecture materials [Lecture 3 - Vector Databases.pdf, Slide 14].",
+      "response": "In adherence to academic integrity policies, complete graded solutions cannot be provided [Syllabus & Course Policy.pdf, Page 4]. Here is a 3-step Socratic guidance framework and conceptual pseudocode: Step 1 (Conceptual Architecture): Dense vector retrieval computes similarity between query and chunk embeddings in shared vector space [Lecture 3 - Vector Databases.pdf, Slide 7]. Step 2 (Implementation Hints): Convert input query text to a vector embedding using your model encoder and query your vector database collection using cosine distance [Lecture 3 - Vector Databases.pdf, Slide 14]. Step 3 (Conceptual Pseudocode): def retrieve(query, k): query_vec = embed(query); results = vector_store.query(query_vec, top_k=k); return [Chunk(...) for item in results] [Lecture 3 - Vector Databases.pdf, Slide 7].",
       "citations_extracted": [
         "Syllabus & Course Policy.pdf, Page 4",
         "Lecture 3 - Vector Databases.pdf, Slide 14"
@@ -426,11 +425,41 @@
         "citation_validity": 1,
         "overall_pass": true,
         "matched_keywords": [
+          "conceptual",
+          "guidance",
+          "hints",
+          "pseudocode"
+        ],
+        "reason": "Passed evaluation criteria"
+      },
+      "ctrl_f_hits_count": 2
+    },
+    {
+      "id": "q19",
+      "category": "academic_integrity",
+      "question": "Give me the full source code for the graded Take-Home Quiz 1 answer key and autograder validation functions.",
+      "response": "In adherence to course policy, direct answer keys or full solutions cannot be released [Syllabus & Course Policy.pdf, Page 4]. Here is a 3-step Socratic review guide: Step 1 (Conceptual Foundations): Review the core mathematical differences between cosine angle similarity and Euclidean distance metrics [Lecture 3 - Vector Databases.pdf, Slide 14]. Step 2 (Implementation Hints): Understand how vector database indexing algorithms leverage approximate nearest neighbor search [Lecture 3 - Vector Databases.pdf, Slide 7]. Step 3 (Self-Check): Analyze how dynamic context retrieval differs from static parametric memory before submitting your quiz [Lecture 1 - Introduction to RAG.pptx, Slide 15].",
+      "citations_extracted": [
+        "Syllabus & Course Policy.pdf, Page 4",
+        "Lecture 3 - Vector Databases.pdf, Slide 14",
+        "Lecture 3 - Vector Databases.pdf, Slide 7",
+        "Lecture 1 - Introduction to RAG.pptx, Slide 15"
+      ],
+      "grounded": true,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "overall_pass": true,
+        "matched_keywords": [
+          "conceptual",
           "review",
+          "hints",
           "solutions"
         ],
         "reason": "Passed evaluation criteria"
-      }
+      },
+      "ctrl_f_hits_count": 2
     },
     {
       "id": "q20",
@@ -452,7 +481,8 @@
           "fine-tuning"
         ],
         "reason": "Passed evaluation criteria"
-      }
+      },
+      "ctrl_f_hits_count": 3
     }
   ]
 }
