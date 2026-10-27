@@ -20,7 +20,7 @@ RAG_DIR = Path(__file__).resolve().parent / "rag-pipeline"
 # Hits below this cosine similarity are dropped so out-of-scope questions get no
 # chunks, which makes the QA engine use its "not found" fallback. Tune it on the
 # benchmark's out-of-scope questions.
-MIN_SCORE = 0.3
+MIN_SCORE = 0.25
 
 
 def _location(source: str, page: int) -> str:
