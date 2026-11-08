@@ -134,9 +134,12 @@ pip install -r requirements.txt
    Document text containing bounded instruction-like patterns is stripped before
    indexing. Retrieved results expose `suspicious` and `warning` metadata; the
    original source text is retained privately for audit/citation use.
-      (Test sanitisation:
-      pip install pytest
-      .\venv\Scripts\python.exe -m pytest tests\test_sanitize.py -q)
+
+   Test sanitisation:
+   ```bash
+   pip install pytest
+   .\venv\Scripts\python.exe -m pytest tests\test_sanitize.py -q
+   ```
 4. Evaluate retrieval recall against labeled questions:
    ```bash
    python evaluate_retrieval.py
