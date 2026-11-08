@@ -1,0 +1,102 @@
+[
+  {
+    "question": "What does LLM stand for and what is its definition?",
+    "source": "SE201_Week01_From_Text_to_Tokens.pdf",
+    "page": 25
+  },
+  {
+    "question": "What are the functions of the harness around an LLM?",
+    "source": "SE201_Week01_From_Text_to_Tokens.pdf",
+    "page": 20
+  },
+  {
+    "question": "What is a single neuron made of?",
+    "source": "SE201_Week02_Simple_Neural_Networks.pdf",
+    "page": 6
+  },
+  {
+    "question": "Why is XOR not linearly separable?",
+    "source": "SE201_Week02_Simple_Neural_Networks.pdf",
+    "page": 7
+  },
+  {
+    "question": "What are bits and bytes?",
+    "source": "SE201_Week03_Primer_Bits_and_Bytes.pdf",
+    "page": 3
+  },
+  {
+    "question": "What is the purpose of back-propagation in neural-network training?",
+    "source": "SE201_Week03_Training_Neural_Networks.pdf",
+    "page": 31
+  },
+  {
+    "question": "How does an LLM predict the next token?",
+    "source": "SE201_Week04_Transformers_and_Attention.pdf",
+    "page": 3
+  },
+  {
+    "question": "What is the purpose of attention in a transformer?",
+    "source": "SE201_Week04_Transformers_and_Attention.pdf",
+    "page": 40
+  },
+  {
+    "question": "What is temperature in text generation?",
+    "source": "SE201_Week05_Generation_and_Evaluation.pdf",
+    "page": 16
+  },
+  {
+    "question": "How can generated text be evaluated?",
+    "source": "SE201_Week05_Generation_and_Evaluation.pdf",
+    "page": 17
+  },
+  {
+    "question": "What is retrieval-augmented generation?",
+    "source": "SE201_Week06_RAG_Tools_MCP.pdf",
+    "page": 20
+  },
+  {
+    "question": "What is the purpose of a tool in an agent system?",
+    "source": "SE201_Week06_RAG_Tools_MCP.pdf",
+    "page": 20
+  },
+  {
+    "question": "What is A2A communication?",
+    "source": "SE201_Week07_MCP_A2A_Accountability.pdf",
+    "page": 23
+  },
+  {
+    "question": "Why is accountability important for AI agents?",
+    "source": "SE201_Week07_MCP_A2A_Accountability.pdf",
+    "page": 33
+  },
+  {
+    "question": "What is generative AI across the software lifecycle?",
+    "source": "SE201_Week09_GenAI_Across_the_Lifecycle.pdf",
+    "page": 1
+  },
+  {
+    "question": "What are LangChain and LangGraph?",
+    "source": "SE201_Week09_LangChain_LangGraph.pdf",
+    "page": 6
+  },
+  {
+    "question": "Why is verification needed for AI-generated output?",
+    "source": "SE201_Week10_Checkpoint_tools_verification_and_cost.pdf",
+    "page": 1
+  },
+  {
+    "question": "What is an LLM-as-judge?",
+    "source": "SE201_Week11_Code_review_pipeline_and_security.pdf",
+    "page": 15
+  },
+  {
+    "question": "What is the role of orchestration in multi-agent systems?",
+    "source": "SE201_Week12_Orchestration_and_Deployment.pdf",
+    "page": 1
+  },
+  {
+    "question": "What is GPU memory used for when deploying LLMs?",
+    "source": "SE201_Week11_GPU_Memory.pdf",
+    "page": 4
+  }
+]

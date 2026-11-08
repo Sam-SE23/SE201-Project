@@ -17,6 +17,19 @@ sys.path.append(str(Path(__file__).parent.parent))
 from config import DATA_DIR
 
 
+def clean_text(text: str) -> str:
+    """Normalize common PDF extraction artifacts while preserving line breaks."""
+    text = text.replace("\ufffd", "")
+    text = text.replace("\u2022", "-")
+    text = text.replace("\u2013", "-").replace("\u2014", "-")
+    lines = []
+    for line in text.splitlines():
+        line = " ".join(line.split())
+        if line:
+            lines.append(line)
+    return "\n".join(lines)
+
+
 @dataclass
 class RawPage:
     """One page/slide of raw text, before chunking."""
@@ -30,7 +43,7 @@ def load_pdf(path: Path) -> list[RawPage]:
     with pdfplumber.open(str(path)) as pdf:
         for i, page in enumerate(pdf.pages, start=1):
             text = page.extract_text() or ""
-            text = text.strip()
+            text = clean_text(text)
             if text:
                 pages.append(RawPage(source=path.name, page=i, text=text))
     return pages
@@ -46,10 +59,10 @@ def load_pptx(path: Path) -> list[RawPage]:
                 for para in shape.text_frame.paragraphs:
                     line = "".join(run.text for run in para.runs)
                     if line.strip():
-                        texts.append(line.strip())
+                        texts.append(clean_text(line))
             # pick up any speaker notes too — often has useful context
         if slide.has_notes_slide and slide.notes_slide.notes_text_frame:
-            notes = slide.notes_slide.notes_text_frame.text.strip()
+            notes = clean_text(slide.notes_slide.notes_text_frame.text)
             if notes:
                 texts.append(f"[notes] {notes}")
         text = "\n".join(texts).strip()

@@ -109,12 +109,22 @@ pip install -r requirements.txt
    ```bash
    python -m pipeline.retrieve
    ```
+   Retrieval first selects 50 embedding candidates, reranks them with the
+   configured cross-encoder, and returns the best 5. If the reranker cannot
+   load, it explicitly falls back to embedding ranking.
+4. Evaluate retrieval recall against labeled questions:
+   ```bash
+   python evaluate_retrieval.py
+   ```
+   Add questions and expected source pages to
+   `backend/rag-pipeline/evaluation/benchmark.json`. Recall@k passes when
+   the expected source and page appear in the first `k` results.
 
 ## Project structure
 
 ```
 backend/rag-pipeline/
-├── config.py              # all tunable knobs (chunk size, top-k, model names)
+├── config.py              # all tunable knobs (chunk size, retrieval, model names)
 ├── build_index.py         # run this to (re)build the vector store
 ├── requirements.txt
 ├── data/                  # drop raw PDFs/PPTX here
@@ -123,6 +133,7 @@ backend/rag-pipeline/
     ├── ingest.py           # PDF/PPTX -> RawPage (text + source + page)
     ├── chunk.py             # RawPage -> Chunk (fixed-size, overlapping)
     ├── embed.py              # text -> vectors (sentence-transformers, local)
+    ├── retrieve.py           # candidate retrieval and cross-encoder reranking
     ├── store.py               # Chroma wrapper (add/reset)
     └── retrieve.py             # the function Member 2 calls
 ```
