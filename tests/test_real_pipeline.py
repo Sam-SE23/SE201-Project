@@ -10,6 +10,7 @@ import pytest
 
 pytest.importorskip("chromadb")
 pytest.importorskip("sentence_transformers")
+pytest.importorskip("rank_bm25")
 
 from backend import registry
 from backend.interfaces import ChatTurn, Retriever
@@ -28,11 +29,18 @@ class ScriptedLLM:
 
 
 @pytest.fixture
-def retriever(tmp_path, monkeypatch):
-    r = ChromaRetriever()
-    # Point Lichelle's store at a temp dir so tests never touch the real index.
-    monkeypatch.setattr(r._store, "STORE_DIR", tmp_path / "store")
-    return r
+def store_dir(tmp_path):
+    # Point Lichelle's Chroma and BM25 indexes at a temp dir so tests never touch the real store.
+    return tmp_path / "store"
+
+
+@pytest.fixture
+def retriever(store_dir):
+    return ChromaRetriever(store_dir=store_dir)
+
+
+def _bm25_record_count(store_dir) -> int:
+    return len(json.loads((store_dir / "bm25_corpus.json").read_text(encoding="utf-8")))
 
 
 def test_real_retriever_satisfies_the_team_contract(retriever):
@@ -70,6 +78,32 @@ def test_pptx_locations_are_slides(retriever, sample_pptx):
 def test_out_of_scope_query_returns_nothing(retriever, sample_pdf):
     retriever.ingest([sample_pdf])
     assert retriever.retrieve("Explain photosynthesis in plants", 3) == []
+
+
+def test_ingest_builds_bm25_index(retriever, store_dir, sample_pdf, sample_pptx):
+    retriever.ingest([sample_pdf, sample_pptx])
+    assert _bm25_record_count(store_dir) == sum(retriever.list_documents().values())
+
+
+def test_reupload_keeps_bm25_in_sync(retriever, store_dir, sample_pdf):
+    retriever.ingest([sample_pdf])
+    retriever.ingest([sample_pdf])
+    assert _bm25_record_count(store_dir) == sum(retriever.list_documents().values())
+
+
+def test_missing_bm25_index_is_rebuilt(retriever, store_dir, sample_pdf):
+    retriever.ingest([sample_pdf])
+    (store_dir / "bm25_corpus.json").unlink()
+    fresh = ChromaRetriever(store_dir=store_dir)
+    assert (store_dir / "bm25_corpus.json").exists()
+    assert fresh.retrieve("When is the checkpoint due?", 3)[0].location == "p.2"
+
+
+def test_scores_are_probabilities(retriever, sample_pdf, sample_pptx):
+    retriever.ingest([sample_pdf, sample_pptx])
+    hits = retriever.retrieve("When is the checkpoint due?", 5)
+    assert hits
+    assert all(0.0 <= h.score <= 1.0 for h in hits)
 
 
 def test_real_qa_engine_end_to_end(retriever, sample_pdf, sample_pptx, tmp_path):

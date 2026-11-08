@@ -41,3 +41,17 @@ Reviewed the plan before any code was written, and verified if it would modify a
 
 ### What I kept or changed
 Kept the adapter design, which wraps Lichelle's pipeline without editing her code, and the relevance cutoff for out-of-scope questions. Put off the LLM provider as it is undecided. Kept the decision to stop tracking the Chroma store in git.
+
+## 2026-11-09 · Rebuild the retriever adapter for the hybrid RAG pipeline
+- **Tool (model):** Claude Code (Claude Opus 5.5)
+- **Files:** backend/retrieval/__init__.py, tests/test_real_pipeline.py, requirements.txt, README.md
+- **Outcome:** Changed
+
+### What I asked for
+An update on Lichelle's changes, then a plan for a new adapter connecting the GUI to her retrieval. Her 8 Nov merge had deleted my original adapter, and her pipeline had changed to hybrid vector + BM25 search with a cross-encoder reranker. I also asked for this desktop to be set up first: it had no Python, venv or `.env`.
+
+### How I checked it
+Reviewed the plan before any code was written. Ran the pytest suite: 31 tests passing, including 4 new ones for the BM25 index and score range. Indexed the 21 SE201 PDFs through the adapter (705 chunks, 30 s) and compared the reranker scores of the 20 benchmark questions with 7 off-topic ones. Checked the weakest questions against their expected pages. Rebuilt the same files with Lichelle's `build_index.py --reset`: her `evaluate_retrieval.py` gave the same Recall@3 55% and Recall@5 65% as the adapter-built store, which differs from her logged 60%/75% because of the larger file set. Launched the app and confirmed the status line shows the retriever as real and the documents are listed.
+
+### What I kept or changed
+Kept the original adapter's design: her pipeline code is untouched, and re-uploads replace a file's chunks. Uploads now also rebuild the BM25 index from Chroma, since her `build_index()` overwrites the whole file. Reranker scores are converted to 0–1 probabilities so Guru's confidence badge still works. The first proposed cutoff (0.5) would have dropped real course questions. I asked for 0.25, then chose 0.01 after seeing that it keeps all 20 benchmark questions while still dropping every off-topic one (all ≤ 0.0011).

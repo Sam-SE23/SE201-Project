@@ -83,7 +83,7 @@ Add any new dependencies (e.g. `chromadb`, `anthropic`) to `requirements.txt`.
 
 | Component | Real module | Notes |
 |---|---|---|
-| Retriever | ✅ `backend/retrieval/__init__.py` | Adapter over the Chroma pipeline in `rag-pipeline/`. The first run downloads the `BAAI/bge-small-en-v1.5` embedding model. The index lives in `backend/retrieval/rag-pipeline/store/` (git-ignored) and is shared with `build_index.py`. Hits below `MIN_SCORE` are dropped, so out-of-scope questions get no chunks. |
+| Retriever | ✅ `backend/retrieval/__init__.py` | Adapter over the hybrid pipeline in `rag-pipeline/`: vector search (Chroma) plus BM25 keyword search, reranked by a cross-encoder. The first run downloads the `BAAI/bge-small-en-v1.5` embedding model and the `ms-marco-MiniLM-L-6-v2` reranker. Both indexes live in `backend/retrieval/rag-pipeline/store/` (git-ignored) and are shared with `build_index.py`. Uploads add to Chroma and then rebuild the BM25 index from it. Reranker scores are converted to 0–1 probabilities, and hits below `MIN_SCORE` are dropped, so out-of-scope questions get no chunks. |
 | QA engine | ✅ `backend/qa/` | Works, but on the stub LLM the answers are placeholders; the app shows a warning. |
 | LLM | ❌ stub | Provider not chosen yet. |
 | Quiz engine | ❌ stub | |
