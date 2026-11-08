@@ -85,7 +85,7 @@ Add any new dependencies (e.g. `chromadb`, `anthropic`) to `requirements.txt`.
 |---|---|---|
 | Retriever | ✅ `backend/retrieval/__init__.py` | Adapter over the hybrid pipeline in `rag-pipeline/`: vector search (Chroma) plus BM25 keyword search, reranked by a cross-encoder. The first run downloads the `BAAI/bge-small-en-v1.5` embedding model and the `ms-marco-MiniLM-L-6-v2` reranker. Both indexes live in `backend/retrieval/rag-pipeline/store/` (git-ignored) and are shared with `build_index.py`. Uploads add to Chroma and then rebuild the BM25 index from it. Reranker scores are converted to 0–1 probabilities, and hits below `MIN_SCORE` are dropped, so out-of-scope questions get no chunks. |
 | QA engine | ✅ `backend/qa/` | Works, but on the stub LLM the answers are placeholders; the app shows a warning. |
-| LLM | ❌ stub | Provider not chosen yet. |
+| LLM | ✅ `backend/llm/__init__.py` | LiteLLM client. Runs a local Ollama model (see below); a hosted model is a one-line `.env` change. Falls back to the stub, with the reason in the status line, if no model is set, Ollama isn't running or the model isn't pulled. |
 | Quiz engine | ❌ stub | |
 
 To run with real retrieval and the real QA engine, set these in `.env`:
@@ -96,6 +96,32 @@ STUDY_BUDDY_QA=real
 ```
 
 `tests/test_real_pipeline.py` covers the real retriever and QA engine through the orchestrator. It is skipped if `chromadb` or `sentence-transformers` isn't installed.
+
+### Running with a local Ollama model
+
+1. Install [Ollama](https://ollama.com/download), then pull a model, e.g. `ollama pull qwen3:8b`.
+2. Run `ollama run qwen3:8b "hello"`, and while it's loaded check that `ollama ps` shows `100% GPU`. A CPU/GPU split means the model is too big for your VRAM.
+3. Set these in `.env`:
+
+   ```bash
+   STUDY_BUDDY_LLM=real
+   STUDY_BUDDY_LLM_MODEL=ollama_chat/qwen3:8b
+   STUDY_BUDDY_RETRIEVER=real
+   STUDY_BUDDY_QA=real
+   ```
+
+4. Run `python -m frontend.app`. The status line should show `llm: real (ollama_chat/qwen3:8b)`.
+
+To use a hosted model instead (e.g. Claude or Gemini), change two lines; the code stays the same:
+
+```bash
+STUDY_BUDDY_LLM_MODEL=anthropic/claude-sonnet-5-5   # or gemini/<model>
+STUDY_BUDDY_LLM_API_KEY=<your key>
+```
+
+The key setting has the same name whichever provider you use. If it's missing, the app falls back to the stub and the status line says to set it. A hosted model needs internet, costs per question, and sends your course material to the provider.
+
+`tests/test_llm.py` mocks LiteLLM, so it runs without Ollama. Its two `ollama` tests call the real model and are skipped unless Ollama is running with the model pulled. Run just those with `pytest -m ollama`.
 
 ## AI use log
 

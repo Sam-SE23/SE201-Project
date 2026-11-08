@@ -55,3 +55,17 @@ Reviewed the plan before any code was written. Ran the pytest suite: 31 tests pa
 
 ### What I kept or changed
 Kept the original adapter's design: her pipeline code is untouched, and re-uploads replace a file's chunks. Uploads now also rebuild the BM25 index from Chroma, since her `build_index()` overwrites the whole file. Reranker scores are converted to 0–1 probabilities so Guru's confidence badge still works. The first proposed cutoff (0.5) would have dropped real course questions. I asked for 0.25, then chose 0.01 after seeing that it keeps all 20 benchmark questions while still dropping every off-topic one (all ≤ 0.0011).
+
+## 2026-11-09 · LiteLLM client for a local Ollama model
+- **Tool (model):** Claude Code (Claude Opus 5.5)
+- **Files:** backend/llm/__init__.py, backend/config.py, .env.example, requirements.txt, frontend/formatting.py, frontend/app.py, tests/test_llm.py, pytest.ini, README.md
+- **Outcome:** Changed
+
+### What I asked for
+A plan for the LiteLLM client code, so the app can use a real LLM instead of the stub. Installing Ollama and choosing the model were left for a later step.
+
+### How I checked it
+Reviewed the plan before any code was written. Ran the pytest suite: 46 passing at first, including 15 new LLM tests that mock LiteLLM, with the 2 real-Ollama tests skipped. Ran the client against a small fake Ollama server to capture the exact request: `num_ctx` reaches Ollama in `options`, the system prompt is sent first, and a `<think>` block is removed from the reply. That test showed each call waiting about 8 seconds, because LiteLLM looks up model details at its own default address and ignores the one passed in. After the fix, a call took 0.2 seconds. Checked the status line for both failure cases (no model set, Ollama not running), and that the GUI still builds.
+
+### What I kept or changed
+Kept LiteLLM and a model chosen in `.env`, as planned. Added two changes the plan didn't have: the client now points LiteLLM's model lookup at the configured Ollama server, and the default address is 127.0.0.1 rather than localhost, which avoids a slow IPv6 attempt on Windows. Left `tests/eval_runner.py` for Guru to switch over to `create_llm()`. Before committing, I asked whether Claude or Gemini could be used instead. They can, by changing the model in `.env`. I then had a startup check added for a missing API key, and asked for one provider-neutral key setting (`STUDY_BUDDY_LLM_API_KEY`) instead of each provider's own variable, so switching providers only changes `.env` values. Tests: 54 passing, 2 skipped.

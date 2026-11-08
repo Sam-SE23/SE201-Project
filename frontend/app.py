@@ -38,7 +38,7 @@ def build_app(orch: Orchestrator) -> gr.Blocks:
         gr.Markdown("# 📚 AI Study Buddy\nAsk questions about your course materials "
                     "and test yourself, with every answer cited back to the source.")
         gr.Markdown(DISCLOSURE)
-        gr.Markdown(fmt.status_line(orch.status, orch.warnings),
+        gr.Markdown(fmt.status_line(orch.status, orch.warnings, orch.llm.model_name),
                     elem_id="status-line", container=False)
         components.documents_tab(orch)
         components.ask_tab(orch)

@@ -10,8 +10,13 @@ QUOTE_CHARS = 400
 MAX_HITS = 20
 
 
-def status_line(status: dict[str, str], warnings: list[str]) -> str:
-    parts = " · ".join(f"{name}: `{mode}`" for name, mode in status.items())
+def status_line(status: dict[str, str], warnings: list[str], model: str | None = None) -> str:
+    def part(name: str, mode: str) -> str:
+        if name == "llm" and mode == "real" and model:
+            return f"{name}: `{mode}` ({model})"
+        return f"{name}: `{mode}`"
+
+    parts = " · ".join(part(name, mode) for name, mode in status.items())
     text = f"<sub>Components: {parts}</sub>"
     for w in warnings:
         text += f"\n\n⚠️ <sub>{w}</sub>"
