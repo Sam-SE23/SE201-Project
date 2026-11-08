@@ -13,6 +13,7 @@ from pipeline.ingest import load_documents
 from pipeline.chunk import chunk_pages
 from pipeline.embed import embed
 from pipeline.store import add_chunks, reset_collection
+from pipeline.bm25 import build_index as build_bm25_index, reset_index as reset_bm25_index
 from config import DATA_DIR
 
 
@@ -23,6 +24,7 @@ def main():
 
     if args.reset:
         reset_collection()
+        reset_bm25_index()
 
     print(f"[build] loading documents from {DATA_DIR} ...")
     pages = load_documents()
@@ -40,6 +42,8 @@ def main():
 
     print("[build] writing to vector store ...")
     add_chunks(chunks, vectors)
+    print("[build] writing BM25 keyword index ...")
+    build_bm25_index(chunks)
 
     print(f"\n[build] Done. {len(chunks)} chunks indexed and ready for retrieval.py")
 

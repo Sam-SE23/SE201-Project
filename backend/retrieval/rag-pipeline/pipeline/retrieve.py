@@ -14,9 +14,12 @@ from config import (
     RERANKER_FALLBACK_TO_EMBEDDING,
     RERANKER_MODEL,
     RERANK_CANDIDATES,
+    BM25_CANDIDATES,
+    RRF_K,
 )
 from pipeline.embed import embed
 from pipeline.store import get_collection
+from pipeline.bm25 import search as bm25_search
 
 _reranker = None
 
@@ -54,8 +57,9 @@ def retrieve(query: str, k: int = DEFAULT_TOP_K) -> list[dict]:
     if not results["documents"] or not results["documents"][0]:
         return []
 
-    out = []
-    for doc, meta, distance in zip(
+    vector_hits = {}
+    for chunk_id, doc, meta, distance in zip(
+        results["ids"][0],
         results["documents"][0],
         results["metadatas"][0],
         results["distances"][0],
@@ -63,12 +67,38 @@ def retrieve(query: str, k: int = DEFAULT_TOP_K) -> list[dict]:
         # Chroma returns cosine *distance*; convert it to an initial ranking
         # score before the cross-encoder reranks the candidates.
         score = 1 - distance
-        out.append({
+        vector_hits[chunk_id] = {
+            "id": chunk_id,
             "text": doc,
             "source": meta["source"],
             "page": meta["page"],
             "score": round(score, 4),
-        })
+        }
+
+    keyword_hits = bm25_search(query, BM25_CANDIDATES)
+    keyword_by_id = {hit["id"]: hit for hit in keyword_hits}
+    vector_ranks = {
+        chunk_id: rank for rank, chunk_id in enumerate(vector_hits, start=1)
+    }
+    keyword_ranks = {
+        hit["id"]: rank for rank, hit in enumerate(keyword_hits, start=1)
+    }
+    candidate_ids = set(vector_hits) | set(keyword_by_id)
+    fused = []
+    for chunk_id in candidate_ids:
+        rrf_score = 0.0
+        if chunk_id in vector_ranks:
+            rrf_score += 1 / (RRF_K + vector_ranks[chunk_id])
+        if chunk_id in keyword_ranks:
+            rrf_score += 1 / (RRF_K + keyword_ranks[chunk_id])
+        hit = (
+            vector_hits[chunk_id]
+            if chunk_id in vector_hits
+            else keyword_by_id[chunk_id]
+        ).copy()
+        hit["rrf_score"] = rrf_score
+        fused.append(hit)
+    out = sorted(fused, key=lambda hit: hit["rrf_score"], reverse=True)
 
     try:
         reranker = get_reranker()
@@ -80,7 +110,7 @@ def retrieve(query: str, k: int = DEFAULT_TOP_K) -> list[dict]:
         )
         for rerank_score, hit in ranked:
             hit["score"] = round(float(rerank_score), 4)
-        return [hit for _, hit in ranked[:k]]
+        return [_public_hit(hit) for _, hit in ranked[:k]]
     except (ImportError, OSError, RuntimeError, ValueError) as error:
         if not RERANKER_FALLBACK_TO_EMBEDDING:
             raise RuntimeError(
@@ -88,9 +118,18 @@ def retrieve(query: str, k: int = DEFAULT_TOP_K) -> list[dict]:
             ) from error
         print(
             f"[retrieve] WARNING: reranker unavailable; "
-            f"using embedding ranking: {error}"
+            f"using fused BM25/vector ranking: {error}"
         )
-        return out[:k]
+        return [_public_hit(hit) for hit in out[:k]]
+
+
+def _public_hit(hit: dict) -> dict:
+    return {
+        "text": hit["text"],
+        "source": hit["source"],
+        "page": hit["page"],
+        "score": hit["score"],
+    }
 
 
 if __name__ == "__main__":

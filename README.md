@@ -83,7 +83,7 @@ Add any new dependencies (e.g. `chromadb`, `anthropic`) to `requirements.txt`.
 
 | Component | Real module | Notes |
 |---|---|---|
-| Retriever | ✅ `backend/retrieval/__init__.py` | Adapter over the Chroma pipeline in `rag-pipeline/`. The first run downloads the `all-MiniLM-L6-v2` embedding model. The index lives in `backend/retrieval/rag-pipeline/store/` (git-ignored) and is shared with `build_index.py`. Hits below `MIN_SCORE` are dropped, so out-of-scope questions get no chunks. |
+| Retriever | ✅ `backend/retrieval/__init__.py` | Adapter over the Chroma pipeline in `rag-pipeline/`. The first run downloads the `BAAI/bge-small-en-v1.5` embedding model. The index lives in `backend/retrieval/rag-pipeline/store/` (git-ignored) and is shared with `build_index.py`. Hits below `MIN_SCORE` are dropped, so out-of-scope questions get no chunks. |
 | QA engine | ✅ `backend/qa/` | Works, but on the stub LLM the answers are placeholders; the app shows a warning. |
 | LLM | ❌ stub | Provider not chosen yet. |
 | Quiz engine | ❌ stub | |
@@ -127,15 +127,16 @@ pip install -r requirements.txt
    ```bash
    python -m pipeline.retrieve
    ```
-   Retrieval first selects 50 embedding candidates, reranks them with the
+   Retrieval selects 50 BGE vector candidates and 50 BM25 keyword candidates,
+   merges their ranks with RRF, reranks the fused candidates with the
    configured cross-encoder, and returns the best 5. If the reranker cannot
-   load, it explicitly falls back to embedding ranking.
+   load, it explicitly falls back to the fused ranking.
 4. Evaluate retrieval recall against labeled questions:
    ```bash
    python evaluate_retrieval.py
    ```
    Add questions and expected source pages to
-   `backend/rag-pipeline/evaluation/benchmark.json`. Recall@k passes when
+   `backend/retrieval/rag-pipeline/evaluation/benchmark.json`. Recall@k passes when
    the expected source and page appear in the first `k` results.
 
 ## Project structure
@@ -146,7 +147,7 @@ backend/retrieval/rag-pipeline/
 ├── build_index.py         # run this to (re)build the vector store
 ├── requirements.txt
 ├── data/                  # drop raw PDFs/PPTX here
-├── store/                 # Chroma's persisted DB (auto-created)
+├── store/                 # Chroma and BM25 persisted indexes (auto-created)
 └── pipeline/
     ├── ingest.py           # PDF/PPTX -> RawPage (text + source + page)
     ├── chunk.py             # RawPage -> Chunk (fixed-size, overlapping)
@@ -176,6 +177,11 @@ Everything worth tuning lives in `config.py`:
   context, too high adds noise and cost.
 - `EMBEDDING_MODEL` — defaults to a free local model (`all-MiniLM-L6-v2`).
    May switch models when tuning it further.
+- `BM25_CANDIDATES` / `RRF_K` — keyword candidate count and RRF rank constant.
+
+Run `python build_index.py --reset` after changing documents, chunking, or
+embedding settings. This rebuilds both the Chroma vector collection and the
+persisted BM25 corpus.
 
 ## Known limitations (temporarily)
 
