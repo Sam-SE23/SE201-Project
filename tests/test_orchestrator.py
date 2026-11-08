@@ -76,8 +76,16 @@ def test_ai_calls_are_logged(orch, sample_pdf):
 
 
 def test_registry_falls_back_to_stub_when_real_module_missing(monkeypatch):
-    monkeypatch.setitem(config.BACKENDS, "retriever", "real")
+    # backend.quiz has no create_quiz_engine yet, so loading it fails
+    monkeypatch.setitem(config.BACKENDS, "quiz", "real")
     components = registry.build()
-    assert isinstance(components.retriever, FakeRetriever)
-    assert components.status["retriever"] == "stub"
-    assert any("retriever" in w for w in components.warnings)
+    assert isinstance(components.quiz, FakeQuiz)
+    assert components.status["quiz"] == "stub"
+    assert any("quiz" in w for w in components.warnings)
+
+
+def test_registry_warns_when_real_qa_uses_stub_llm(monkeypatch):
+    monkeypatch.setitem(config.BACKENDS, "qa", "real")
+    components = registry.build()
+    assert components.status["qa"] == "real"
+    assert any("stub LLM" in w for w in components.warnings)

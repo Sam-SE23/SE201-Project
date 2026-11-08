@@ -59,4 +59,6 @@ def build() -> Components:
     retriever = load("retriever", "backend.retrieval", "create_retriever", FakeRetriever)
     qa = load("qa", "backend.qa", "create_qa_engine", FakeQA, llm)
     quiz = load("quiz", "backend.quiz", "create_quiz_engine", FakeQuiz, llm)
+    if status["qa"] == "real" and status["llm"] == "stub":
+        warnings.append("qa: real engine is running on the stub LLM, so answers are placeholders")
     return Components(llm, retriever, qa, quiz, status, warnings)
