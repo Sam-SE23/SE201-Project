@@ -80,6 +80,7 @@ def ask_tab(orch: Orchestrator) -> None:
 def quiz_tab(orch: Orchestrator) -> None:
     with gr.Tab("📝 Quiz"):
         session = gr.State(None)
+        displayed_index = gr.State(None)
         with gr.Row():
             topic = gr.Textbox(label="Topic", placeholder="e.g. evaluation metrics", scale=3,
                                elem_classes="no-scrollbar")
@@ -91,6 +92,7 @@ def quiz_tab(orch: Orchestrator) -> None:
             progress = gr.Markdown()
             question = gr.Markdown()
             answer = gr.Textbox(label="Your answer", elem_classes="no-scrollbar")
+            choice = gr.Radio(label="Your answer", visible=False)
             submit = gr.Button("Submit", variant="primary")
             feedback = gr.Markdown()
             next_btn = gr.Button("Next question", visible=False)
@@ -98,11 +100,13 @@ def quiz_tab(orch: Orchestrator) -> None:
 
         def show_question(s: QuizSession):
             q = s.current
-            return (fmt.quiz_progress(s), fmt.quiz_question(q),
-                    gr.update(value="", interactive=True), gr.update(interactive=True),
-                    "", gr.update(visible=False))
+            return (s.index, fmt.quiz_progress(s), fmt.quiz_question(q),
+                    gr.update(value="", visible=not q.choices, interactive=True),
+                    gr.update(choices=q.choices or [], value=None,
+                              visible=bool(q.choices), interactive=True),
+                    gr.update(interactive=True), "", gr.update(visible=False))
 
-        question_outputs = [progress, question, answer, submit, feedback, next_btn]
+        question_outputs = [displayed_index, progress, question, answer, choice, submit, feedback, next_btn]
 
         def on_generate(t, n):
             s, msg = orch.start_quiz(t, int(n))
@@ -114,27 +118,32 @@ def quiz_tab(orch: Orchestrator) -> None:
         generate.click(on_generate, inputs=[topic, count],
                        outputs=[session, status, quiz_box, summary, *question_outputs])
 
-        def on_submit(s: QuizSession, user_answer):
-            if s is None or s.finished:
-                return gr.update(), gr.update(), gr.update(), gr.update()
+        def on_submit(s: QuizSession, shown_index, text_answer, selected_answer):
+            if s is None or s.finished or s.index != shown_index:
+                return (gr.skip(),) * 5
             q = s.current
+            if q.choices and selected_answer is None:
+                return ("Choose an answer before submitting.",) + (gr.skip(),) * 4
+            user_answer = selected_answer if q.choices else text_answer
             grade = orch.submit_answer(s, user_answer)
             label = "See results" if s.finished else "Next question"
             return (fmt.quiz_feedback(grade, q), gr.update(interactive=False),
+                    gr.update(interactive=False),
                     gr.update(interactive=False), gr.update(visible=True, value=label))
 
-        submit.click(on_submit, inputs=[session, answer],
-                     outputs=[feedback, answer, submit, next_btn])
-        answer.submit(on_submit, inputs=[session, answer],
-                      outputs=[feedback, answer, submit, next_btn])
+        gr.on([submit.click, answer.submit], on_submit,
+              inputs=[session, displayed_index, answer, choice],
+              outputs=[feedback, answer, choice, submit, next_btn])
 
-        def on_next(s: QuizSession):
+        def on_next(s: QuizSession, shown_index):
+            if s is None or s.index == shown_index:
+                return (gr.skip(),) * (2 + len(question_outputs))
             if s.finished:
                 return (gr.update(visible=False), fmt.quiz_summary(orch.quiz_summary(s)),
                         *[gr.update()] * len(question_outputs))
             return (gr.update(visible=True), "", *show_question(s))
 
-        next_btn.click(on_next, inputs=session,
+        next_btn.click(on_next, inputs=[session, displayed_index],
                        outputs=[quiz_box, summary, *question_outputs])
 
 

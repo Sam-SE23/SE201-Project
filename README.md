@@ -86,7 +86,7 @@ Add any new dependencies (e.g. `chromadb`, `anthropic`) to `requirements.txt`.
 | Retriever | ✅ `backend/retrieval/__init__.py` | Adapter over the Chroma pipeline in `rag-pipeline/`. The first run downloads the `all-MiniLM-L6-v2` embedding model. The index lives in `backend/retrieval/rag-pipeline/store/` (git-ignored) and is shared with `build_index.py`. Hits below `MIN_SCORE` are dropped, so out-of-scope questions get no chunks. |
 | QA engine | ✅ `backend/qa/` | Works, but on the stub LLM the answers are placeholders; the app shows a warning. |
 | LLM | ❌ stub | Provider not chosen yet. |
-| Quiz engine | ❌ stub | |
+| Quiz engine | ✅ `backend/quiz/` | Generates cited multiple-choice questions, grades selections, and flags concepts to review. Uses the demo quiz until a real LLM is configured. |
 
 To run with real retrieval and the real QA engine, set these in `.env`:
 
@@ -96,6 +96,18 @@ STUDY_BUDDY_QA=real
 ```
 
 `tests/test_real_pipeline.py` covers the real retriever and QA engine through the orchestrator. It is skipped if `chromadb` or `sentence-transformers` isn't installed.
+
+### Run the real quiz engine
+
+Once the shared LLM adapter and its credentials are configured, set the following in `.env` and restart the app.
+
+```bash
+STUDY_BUDDY_LLM=real
+STUDY_BUDDY_RETRIEVER=real
+STUDY_BUDDY_QUIZ=real
+```
+
+Upload course materials, enter a topic in the Quiz tab, and select an answer for each question. The results list concepts with a missed question and the pages or slides to revisit. Run `pytest tests/test_quiz.py` to test the engine with scripted model responses.
 
 ## AI use log
 
