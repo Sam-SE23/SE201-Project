@@ -68,6 +68,13 @@ def documents_rows(documents: dict[str, int]) -> list[list]:
     return [[name, count] for name, count in sorted(documents.items())]
 
 
+def remove_warning(name: str) -> str:
+    return (f"⚠️ **Remove {name}?** This permanently deletes it from the app's internal "
+            "storage: the search index and the stored copy in `data/`. Questions will no "
+            "longer use it. Your original file elsewhere isn't affected. "
+            "**This can't be undone.**")
+
+
 def quiz_progress(session: QuizSession) -> str:
     return f"**Question {session.index + 1} of {len(session.questions)}** · topic: _{session.topic}_"
 

@@ -89,3 +89,27 @@ def test_registry_warns_when_real_qa_uses_stub_llm(monkeypatch):
     components = registry.build()
     assert components.status["qa"] == "real"
     assert any("stub LLM" in w for w in components.warnings)
+
+
+def test_remove_needs_the_real_retriever(orch, sample_pdf):
+    orch.upload([sample_pdf])
+    result = orch.remove("syllabus.pdf")
+    assert not result.ok
+    assert "STUDY_BUDDY_RETRIEVER=real" in result.message
+    assert "syllabus.pdf" in orch.documents()
+
+
+def test_stored_copy_delete_stays_inside_its_folder(tmp_path):
+    from backend.files import delete_stored_copy
+
+    folder = tmp_path / "uploads"
+    folder.mkdir()
+    (folder / "notes.pdf").write_bytes(b"x")
+    outside = tmp_path / "outside.pdf"
+    outside.write_bytes(b"x")
+
+    assert not delete_stored_copy(folder, "../outside.pdf")
+    assert outside.exists()
+    assert delete_stored_copy(folder, "notes.pdf")
+    assert not (folder / "notes.pdf").exists()
+    assert not delete_stored_copy(folder, "notes.pdf")   # already gone

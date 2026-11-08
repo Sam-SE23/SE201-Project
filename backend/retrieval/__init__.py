@@ -25,6 +25,7 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+from backend.files import delete_stored_copy
 from backend.interfaces import Chunk, Retriever
 
 log = logging.getLogger(__name__)
@@ -63,7 +64,8 @@ def _reranker_returns_logits(reranker) -> bool:
 
 
 class ChromaRetriever:
-    def __init__(self, min_score: float = MIN_SCORE, store_dir: Path | None = None) -> None:
+    def __init__(self, min_score: float = MIN_SCORE, store_dir: Path | None = None,
+                 data_dir: Path | None = None) -> None:
         # rag-pipeline/ has a hyphen so it can't be a package; her modules import
         # each other as top-level `config` / `pipeline`, so put it first on the path.
         if str(RAG_DIR) not in sys.path:
@@ -73,6 +75,9 @@ class ChromaRetriever:
         self._bm25, self._chunk, self._embed = bm25, chunk, embed
         self._ingest, self._retrieve, self._store = ingest, retrieve, store
         self.min_score = min_score
+        # Her build_index.py indexes every file in this folder, so remove()
+        # deletes the file here too, or a rebuild would bring it back.
+        self.data_dir = Path(data_dir) if data_dir is not None else ingest.DATA_DIR
 
         if store_dir is not None:
             # Her modules read these globals on every call, so this redirects
@@ -130,6 +135,17 @@ class ChromaRetriever:
             out.append(Chunk(id=f"{h['source']}:{location}:{i}", text=h["text"],
                              source_file=h["source"], location=location, score=round(score, 4)))
         return out
+
+    def remove(self, source_file: str) -> int:
+        """Forget a file: drop its chunks from both indexes and delete its copy in
+        the pipeline's data folder. Return the number of chunks removed.
+
+        Not part of the Retriever interface yet, because the stubs don't have it."""
+        removed = self.list_documents().get(source_file, 0)
+        self._store.get_collection().delete(where={"source": source_file})
+        self._rebuild_bm25()
+        delete_stored_copy(self.data_dir, source_file)
+        return removed
 
     def list_documents(self) -> dict[str, int]:
         counts: dict[str, int] = {}

@@ -69,3 +69,17 @@ Reviewed the plan before any code was written. Ran the pytest suite: 46 passing 
 
 ### What I kept or changed
 Kept LiteLLM and a model chosen in `.env`, as planned. Added two changes the plan didn't have: the client now points LiteLLM's model lookup at the configured Ollama server, and the default address is 127.0.0.1 rather than localhost, which avoids a slow IPv6 attempt on Windows. Left `tests/eval_runner.py` for Guru to switch over to `create_llm()`. Before committing, I asked whether Claude or Gemini could be used instead. They can, by changing the model in `.env`. I then had a startup check added for a missing API key, and asked for one provider-neutral key setting (`STUDY_BUDDY_LLM_API_KEY`) instead of each provider's own variable, so switching providers only changes `.env` values. Tests: 54 passing, 2 skipped.
+
+## 2026-11-09 · Remove a document from the Documents tab
+- **Tool (model):** Claude Code (Claude Opus 5.5)
+- **Files:** backend/files.py, backend/retrieval/__init__.py, backend/orchestrator.py, backend/baseline/ctrl_f.py, frontend/components.py, frontend/formatting.py, frontend/app.py, tests/test_real_pipeline.py, tests/test_orchestrator.py, README.md
+- **Outcome:** Changed
+
+### What I asked for
+An explanation of why right-clicking the ingested-documents table showed an empty popup, then a way to remove a document so retrieval can't use it. The document had to be deleted from `data/` too, and the user had to be warned first.
+
+### How I checked it
+Reviewed the plan before any code was written. Ran the pytest suite: 59 passing, 2 skipped, including tests that remove one of two files and check it's gone from both indexes, retrieval and the Ctrl+F search, and from both storage folders, while the other file stays. A further test checks that a name like `../x.pdf` can't delete anything outside the storage folder. Drove the UI handlers on a temporary store: selecting a row enables the button, Remove only shows the warning, Cancel deletes nothing, and confirming deletes all 11 chunks and both copies while the original file stays.
+
+### What I kept or changed
+The empty popup is Gradio's cell menu, which only has editing actions, and it can't take a custom Remove action. So I chose a select-then-Remove button with an in-page warning instead, and hid the empty menu with CSS. I asked for the stubs to be left unchanged, since they will be removed soon. So `remove()` exists only on the real retriever for now, and isn't yet part of the shared Retriever interface.

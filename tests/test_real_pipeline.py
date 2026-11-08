@@ -5,6 +5,7 @@ The first run downloads the embedding model.
 """
 
 import json
+import shutil
 
 import pytest
 
@@ -35,8 +36,26 @@ def store_dir(tmp_path):
 
 
 @pytest.fixture
-def retriever(store_dir):
-    return ChromaRetriever(store_dir=store_dir)
+def data_dir(tmp_path):
+    # Stands in for rag-pipeline/data/, so remove() never deletes real lecture files.
+    path = tmp_path / "rag_data"
+    path.mkdir()
+    return path
+
+
+@pytest.fixture
+def retriever(store_dir, data_dir):
+    return ChromaRetriever(store_dir=store_dir, data_dir=data_dir)
+
+
+@pytest.fixture
+def real_orch(retriever, tmp_path):
+    llm = ScriptedLLM()
+    components = registry.Components(llm, retriever, create_qa_engine(llm), FakeQuiz(),
+                                     status={"llm": "real", "retriever": "real",
+                                             "qa": "real", "quiz": "stub"})
+    return Orchestrator(components, upload_dir=tmp_path / "uploads",
+                        log_path=tmp_path / "logs" / "ai_log.jsonl")
 
 
 def _bm25_record_count(store_dir) -> int:
@@ -104,6 +123,41 @@ def test_scores_are_probabilities(retriever, sample_pdf, sample_pptx):
     hits = retriever.retrieve("When is the checkpoint due?", 5)
     assert hits
     assert all(0.0 <= h.score <= 1.0 for h in hits)
+
+
+def test_remove_forgets_the_file_everywhere(retriever, store_dir, data_dir, sample_pdf, sample_pptx):
+    for f in (sample_pdf, sample_pptx):
+        shutil.copy(f, data_dir / f.name)
+    retriever.ingest([sample_pdf, sample_pptx])
+    pdf_chunks = retriever.list_documents()["syllabus.pdf"]
+
+    assert retriever.remove("syllabus.pdf") == pdf_chunks
+    assert set(retriever.list_documents()) == {"lecture.pptx"}
+    assert _bm25_record_count(store_dir) == retriever.list_documents()["lecture.pptx"]
+    hits = retriever.retrieve("When is the checkpoint due?", 5)
+    assert all(h.source_file != "syllabus.pdf" for h in hits)
+    assert not (data_dir / "syllabus.pdf").exists()
+    assert (data_dir / "lecture.pptx").exists()
+
+
+def test_orchestrator_remove_deletes_upload_copy(real_orch, tmp_path, sample_pdf, sample_pptx):
+    real_orch.upload([sample_pdf, sample_pptx])
+    result = real_orch.remove("syllabus.pdf")
+
+    assert result.ok and "syllabus.pdf" in result.message
+    assert set(result.documents) == {"lecture.pptx"}
+    assert not (tmp_path / "uploads" / "syllabus.pdf").exists()
+    assert (tmp_path / "uploads" / "lecture.pptx").exists()
+    assert real_orch.ctrl_f("checkpoint") == []          # Ctrl+F baseline forgot it too
+    assert not real_orch.ask("When is the checkpoint due?", []).grounded
+
+
+def test_orchestrator_remove_unknown_file_changes_nothing(real_orch, sample_pdf):
+    real_orch.upload([sample_pdf])
+    before = real_orch.documents()
+    result = real_orch.remove("not-uploaded.pdf")
+    assert not result.ok
+    assert real_orch.documents() == before
 
 
 def test_real_qa_engine_end_to_end(retriever, sample_pdf, sample_pptx, tmp_path):

@@ -14,6 +14,7 @@ from pathlib import Path
 from backend import config, registry
 from backend.baseline.ctrl_f import CtrlFBaseline, Hit
 from backend.disclosure_log import DisclosureLog
+from backend.files import delete_stored_copy
 from backend.interfaces import Answer, ChatTurn, Citation, Grade, QuizQuestion
 
 log = logging.getLogger(__name__)
@@ -95,6 +96,24 @@ class Orchestrator:
         if bad:
             msg += f" Skipped unsupported: {', '.join(bad)}."
         return UploadResult(True, msg, self.documents())
+
+    def remove(self, name: str) -> UploadResult:
+        """Remove an ingested file: questions stop using it, and the app's stored
+        copies are deleted. Originals elsewhere on the computer are not touched."""
+        if not hasattr(self.retriever, "remove"):
+            return UploadResult(False, "Removing documents needs the real retriever "
+                                       "(STUDY_BUDDY_RETRIEVER=real).", self.documents())
+        if name not in self.documents():
+            return UploadResult(False, f"Not found: {name}", self.documents())
+        try:
+            chunks = self.retriever.remove(name)
+            self.baseline.remove(name)
+            delete_stored_copy(self.upload_dir, name)
+        except Exception as e:  # noqa: BLE001
+            log.exception("remove failed")
+            return UploadResult(False, f"Couldn't remove {name}: {e}", self.documents())
+        return UploadResult(True, f"Removed **{name}** ({chunks} chunks) and deleted its stored copy.",
+                            self.documents())
 
     def documents(self) -> dict[str, int]:
         return self.retriever.list_documents()
