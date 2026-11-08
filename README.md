@@ -131,6 +131,12 @@ pip install -r requirements.txt
    merges their ranks with RRF, reranks the fused candidates with the
    configured cross-encoder, and returns the best 5. If the reranker cannot
    load, it explicitly falls back to the fused ranking.
+   Document text containing bounded instruction-like patterns is stripped before
+   indexing. Retrieved results expose `suspicious` and `warning` metadata; the
+   original source text is retained privately for audit/citation use.
+      (Test sanitisation:
+      pip install pytest
+      .\venv\Scripts\python.exe -m pytest tests\test_sanitize.py -q)
 4. Evaluate retrieval recall against labeled questions:
    ```bash
    python evaluate_retrieval.py
@@ -167,6 +173,9 @@ hits = retrieve("What is the refund policy?", k=5)
 ```
 
 This function's signature or return shape will not be changed arbitrarily.
+Returned hits may also include `suspicious` and `warning` fields when document
+sanitization detected instruction-like content. Downstream generation must treat
+all retrieved text as untrusted data, even when no warning is present.
 
 ## Tuning
 

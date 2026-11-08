@@ -1,8 +1,8 @@
 """
 Step 5: Retrieval.
 
-This is THE function Member 2 builds against. Keep its signature and
-return shape stable, if it needs to change, let Sam know.
+This is THE function Member 2 builds against. Keep its signature stable;
+sanitization metadata is additive to the returned hit fields.
 """
 
 from pathlib import Path
@@ -44,6 +44,8 @@ def retrieve(query: str, k: int = DEFAULT_TOP_K) -> list[dict]:
             "source": str,      # filename it came from
             "page": int,        # page/slide number
             "score": float,     # final ranking score (higher = more relevant)
+            "suspicious": bool,  # instruction-like source text was removed
+            "warning": str|None, # sanitization warning, when applicable
         }
     """
     collection = get_collection()
@@ -72,6 +74,8 @@ def retrieve(query: str, k: int = DEFAULT_TOP_K) -> list[dict]:
             "text": doc,
             "source": meta["source"],
             "page": meta["page"],
+            "suspicious": bool(meta.get("suspicious", False)),
+            "warning": meta.get("warning") or None,
             "score": round(score, 4),
         }
 
@@ -129,6 +133,8 @@ def _public_hit(hit: dict) -> dict:
         "source": hit["source"],
         "page": hit["page"],
         "score": hit["score"],
+        "suspicious": hit.get("suspicious", False),
+        "warning": hit.get("warning"),
     }
 
 

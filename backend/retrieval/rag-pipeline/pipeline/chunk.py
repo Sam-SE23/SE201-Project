@@ -12,6 +12,7 @@ import sys
 sys.path.append(str(Path(__file__).parent.parent))
 from config import CHUNK_SIZE, CHUNK_OVERLAP
 from pipeline.ingest import RawPage, load_documents
+from pipeline.sanitize import sanitize_text
  
  
 @dataclass
@@ -20,6 +21,9 @@ class Chunk:
     text: str
     source: str
     page: int
+    original_text: str
+    suspicious: bool = False
+    warning: str | None = None
  
  
 def chunk_text(text: str, chunk_size: int = CHUNK_SIZE, overlap: int = CHUNK_OVERLAP) -> list[str]:
@@ -71,10 +75,19 @@ def chunk_text(text: str, chunk_size: int = CHUNK_SIZE, overlap: int = CHUNK_OVE
 def chunk_pages(pages: list[RawPage]) -> list[Chunk]:
     chunks: list[Chunk] = []
     for page in pages:
-        pieces = chunk_text(page.text)
+        sanitized = sanitize_text(page.text)
+        pieces = chunk_text(sanitized.text)
         for i, piece in enumerate(pieces):
             chunk_id = f"{page.source}-p{page.page}-c{i}"
-            chunks.append(Chunk(id=chunk_id, text=piece, source=page.source, page=page.page))
+            chunks.append(Chunk(
+                id=chunk_id,
+                text=piece,
+                source=page.source,
+                page=page.page,
+                original_text=sanitized.original_text,
+                suspicious=sanitized.suspicious,
+                warning=sanitized.warning,
+            ))
     return chunks
  
  

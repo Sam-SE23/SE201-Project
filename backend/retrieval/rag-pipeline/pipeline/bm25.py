@@ -21,8 +21,11 @@ def build_index(chunks) -> None:
         {
             "id": chunk.id,
             "text": chunk.text,
+            "original_text": chunk.original_text,
             "source": chunk.source,
             "page": chunk.page,
+            "suspicious": chunk.suspicious,
+            "warning": chunk.warning,
         }
         for chunk in chunks
     ]
