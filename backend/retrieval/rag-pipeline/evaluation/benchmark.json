@@ -37,7 +37,8 @@
   {
     "question": "What is the purpose of attention in a transformer?",
     "source": "SE201_Week04_Transformers_and_Attention.pdf",
-    "page": 40
+    "page": 40,
+    "pages": [40, 46]
   },
   {
     "question": "What is temperature in text generation?",
@@ -57,7 +58,8 @@
   {
     "question": "Why does retrieval help provide a model with new information?",
     "source": "SE201_Week06_RAG_Tools_MCP.pdf",
-    "page": 17
+    "page": 17,
+    "pages": [17, 42]
   },
   {
     "question": "What is A2A communication?",
@@ -80,9 +82,11 @@
     "page": 6
   },
   {
-    "question": "What does a test suite establish when verifying AI-generated code?",
+    "question": "How do example tests, property tests, and mutation score establish confidence in AI-generated code?",
     "source": "SE201_Week10_Checkpoint_tools_verification_and_cost.pdf",
-    "page": 2
+    "page": 35,
+    "pages": [35, 36],
+    "required_pages": [35, 36]
   },
   {
     "question": "What is an LLM-as-judge?",
@@ -97,6 +101,7 @@
   {
     "question": "What is GPU memory used for when deploying LLMs?",
     "source": "SE201_Week11_GPU_Memory.pdf",
-    "page": 4
+    "page": 4,
+    "pages": [4, 6]
   }
 ]
