@@ -25,7 +25,7 @@ BACKENDS = {
 
 # Real LLM (backend/llm), called through LiteLLM. The model string picks the
 # provider: "ollama_chat/<tag>" for a local Ollama model, or "<provider>/<model>"
-# for a hosted one (e.g. "anthropic/claude-sonnet-5-5", "gemini/<model>").
+# for a hosted one (e.g. "anthropic/claude-haiku-5-5").
 LLM_MODEL = os.getenv("STUDY_BUDDY_LLM_MODEL", "")
 # API key for a hosted model, whichever the provider. If empty, LiteLLM falls
 # back to the provider's own variable (e.g. ANTHROPIC_API_KEY). Ollama needs none.

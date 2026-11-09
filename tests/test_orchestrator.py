@@ -85,6 +85,7 @@ def test_registry_falls_back_to_stub_when_real_module_missing(monkeypatch):
 
 
 def test_registry_warns_when_real_qa_uses_stub_llm(monkeypatch):
+    monkeypatch.setitem(config.BACKENDS, "llm", "stub")   # independent of the local .env
     monkeypatch.setitem(config.BACKENDS, "qa", "real")
     components = registry.build()
     assert components.status["qa"] == "real"
@@ -113,3 +114,60 @@ def test_stored_copy_delete_stays_inside_its_folder(tmp_path):
     assert delete_stored_copy(folder, "notes.pdf")
     assert not (folder / "notes.pdf").exists()
     assert not delete_stored_copy(folder, "notes.pdf")   # already gone
+
+
+def test_ui_decoration_is_stripped_from_history(tmp_path, sample_pdf):
+    """Badges and the GUI's "not found" header must not reach the LLM as history."""
+    from backend.interfaces import Answer, ChatTurn
+    from backend.orchestrator import Orchestrator
+
+    class RecordingQA:
+        def answer(self, question, retriever, history):
+            self.history = history
+            return Answer("ok", grounded=True)
+
+    qa = RecordingQA()
+    components = registry.Components(FakeLLM(), FakeRetriever(), qa, FakeQuiz(),
+                                     status={"llm": "stub", "retriever": "stub",
+                                             "qa": "real", "quiz": "stub"})
+    orch = Orchestrator(components, upload_dir=tmp_path / "uploads",
+                        log_path=tmp_path / "logs" / "ai_log.jsonl")
+    orch.upload([sample_pdf])
+    history = [
+        ChatTurn("user", "What is RAG?"),
+        ChatTurn("assistant", "🟢 Grounding Confidence: 95% [Grounded in a.pdf]\n\n"
+                              "RAG retrieves first [a.pdf, p.2]."),
+        ChatTurn("user", "And photosynthesis?"),
+        ChatTurn("assistant", "🔍 **Not found in your materials**\n\n"
+                              "🔴 Grounding Confidence: 0% (Low Grounding / Fallback)\n\n"
+                              "I cannot find information regarding this topic."),
+    ]
+    orch.ask("Why does it help?", history)
+
+    sent = [(t.role, t.content) for t in qa.history]
+    assert sent == [
+        ("user", "What is RAG?"),
+        ("assistant", "RAG retrieves first [a.pdf, p.2]."),
+        ("user", "And photosynthesis?"),
+        ("assistant", "I cannot find information regarding this topic."),
+    ]
+
+
+def test_ai_log_tab_reloads_only_when_an_entry_is_added(orch, sample_pdf):
+    import gradio as gr
+    from frontend.app import build_app
+
+    app = build_app(orch)
+    poll = next(f.fn for f in app.fns.values() if f.name == "poll")
+
+    unchanged, seen = poll(None)                # no log file yet: nothing to reload
+    assert unchanged == gr.skip() and seen is None
+
+    orch.upload([sample_pdf])
+    orch.ask("When is the checkpoint due?", [])
+    rows, seen = poll(seen)                     # a new entry was written
+    assert [r[1:3] for r in rows] == [["qa", "When is the checkpoint due?"]]
+
+    unchanged, same = poll(seen)                # nothing new: leave the table alone
+    assert same == seen
+    assert unchanged == gr.skip()

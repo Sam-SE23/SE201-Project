@@ -112,10 +112,10 @@ STUDY_BUDDY_QA=real
 
 4. Run `python -m frontend.app`. The status line should show `llm: real (ollama_chat/qwen3:8b)`.
 
-To use a hosted model instead (e.g. Claude or Gemini), change two lines; the code stays the same:
+To use a hosted model instead (e.g. Claude), change two lines; the code stays the same:
 
 ```bash
-STUDY_BUDDY_LLM_MODEL=anthropic/claude-sonnet-5-5   # or gemini/<model>
+STUDY_BUDDY_LLM_MODEL=anthropic/claude-haiku-5-5
 STUDY_BUDDY_LLM_API_KEY=<your key>
 ```
 

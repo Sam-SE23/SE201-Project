@@ -27,11 +27,11 @@ from backend.qa.qa_prompts import (
     SECURITY_REFUSAL_TEXT,
     build_qa_prompt,
     compute_grounding_confidence,
+    extract_citations_from_text,
     extract_supporting_excerpt,
     format_chunks,
     format_grounding_badge,
     is_out_of_scope_response,
-    verify_citation_against_chunks,
 )
 
 
@@ -202,24 +202,9 @@ class StrictCitationVerifier:
         chunks: list[Chunk],
     ) -> tuple[list[Citation], bool]:
         raw_citations_found = bool(CITATION_PATTERN.search(response_text))
-        citations: list[Citation] = []
-        seen = set()
-
-        for match in CITATION_PATTERN.finditer(response_text):
-            source = match.group(1).strip()
-            location = match.group(2).strip()
-            key = (source.lower(), location.lower())
-            if key in seen:
-                continue
-            seen.add(key)
-
-            is_valid, matched_quote = verify_citation_against_chunks(source, location, chunks)
-            if not is_valid:
-                # Discard hallucinated citation
-                continue
-
-            citations.append(Citation(source_file=source, location=location, quote=matched_quote))
-
+        # Drops hallucinated citations and stores verified ones under the chunk's
+        # real file name and location (e.g. "[Source: a.pdf, Page 2]" -> a.pdf, p.2).
+        citations = extract_citations_from_text(response_text, chunks)
         return citations, raw_citations_found
 
 

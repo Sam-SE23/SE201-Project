@@ -11,6 +11,7 @@ from backend.orchestrator import Orchestrator, QuizSession
 from frontend import formatting as fmt
 
 REMOVE_LABEL = "🗑 Remove selected document"
+LOG_POLL_SECONDS = 2
 
 
 def documents_tab(orch: Orchestrator) -> None:
@@ -179,8 +180,7 @@ def quiz_tab(orch: Orchestrator) -> None:
 def log_tab(orch: Orchestrator) -> None:
     with gr.Tab("🧾 AI Log"):
         gr.Markdown("Every AI interaction is recorded for transparency and evaluation "
-                    f"(`{orch.log.path.name}`). Most recent last.")
-        refresh = gr.Button("Refresh", size="sm")
+                    f"(`{orch.log.path.name}`). Most recent last; new entries appear automatically.")
 
         def load():
             rows = []
@@ -192,4 +192,16 @@ def log_tab(orch: Orchestrator) -> None:
         # A callable value is re-evaluated on every page load.
         table = gr.Dataframe(value=load, headers=["Time (UTC)", "Mode", "Input", "Model"],
                              interactive=False, wrap=True)
-        refresh.click(load, outputs=table)
+
+        # Poll the log file and reload the table only when an entry has been added,
+        # so new entries from any tab or session show up without a refresh.
+        seen = gr.State(orch.log.version())
+        timer = gr.Timer(LOG_POLL_SECONDS)
+
+        def poll(last_seen):
+            current = orch.log.version()
+            if current == last_seen:
+                return gr.skip(), last_seen
+            return load(), current
+
+        timer.tick(poll, inputs=seen, outputs=[table, seen], show_progress="hidden")

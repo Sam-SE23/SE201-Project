@@ -108,3 +108,19 @@ def test_grounded_qa_engine_dip_and_metrics():
     assert engine.last_metrics.total_latency_ms >= 0.0
     assert engine.last_metrics.valid_citations_count == 1
     assert engine.last_metrics.chunks_retrieved_count == 1
+
+
+def test_verified_citations_use_the_chunks_real_name_and_location():
+    """Models sometimes write "[Source: file, Page 2]"; store it as the real file and location."""
+    from backend.interfaces import Chunk
+    from backend.qa.components import StrictCitationVerifier
+
+    chunks = [Chunk(id="1", text="The checkpoint is due on 18 October.",
+                    source_file="syllabus.pdf", location="p.2")]
+    text = ("Due 18 October [Source: syllabus.pdf, Page 2]. Again [syllabus.pdf, p.2]. "
+            "Invented [syllabus.pdf, p.9].")
+    citations, raw_found = StrictCitationVerifier().extract_and_verify(text, chunks)
+
+    assert raw_found
+    assert [(c.source_file, c.location) for c in citations] == [("syllabus.pdf", "p.2")]
+    assert "18 October" in citations[0].quote

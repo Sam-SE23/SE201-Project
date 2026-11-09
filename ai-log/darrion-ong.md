@@ -83,3 +83,31 @@ Reviewed the plan before any code was written. Ran the pytest suite: 59 passing,
 
 ### What I kept or changed
 The empty popup is Gradio's cell menu, which only has editing actions, and it can't take a custom Remove action. So I chose a select-then-Remove button with an in-page warning instead, and hid the empty menu with CSS. I asked for the stubs to be left unchanged, since they will be removed soon. So `remove()` exists only on the real retriever for now, and isn't yet part of the shared Retriever interface.
+
+## 2026-11-09 · Run on a local model, fix the double badge and citation names
+- **Tool (model):** Claude Code (Claude Opus 5.5)
+- **Files:** backend/orchestrator.py, backend/qa/qa_prompts.py, backend/qa/components.py, tests/test_orchestrator.py, tests/test_qa_solid.py, backend/config.py, backend/llm/__init__.py, .env.example, README.md, tests/test_llm.py
+- **Outcome:** Changed
+
+### What I asked for
+A plan to run the app on one local Ollama model, and then on Claude Haiku if that went well. Gemini was to be removed as an example, since the school doesn't provide it. After the first test run, I asked for the double confidence badge to be fixed and for an explanation of why the benchmark looked poor.
+
+### How I checked it
+Installed Ollama 0.40.15 and chose `granite4.1:8b`, a recent 8B model that doesn't use a reasoning step. It runs 100% on the GPU with an 8192-token context, using 6.7 GB of VRAM at about 90 tokens a second, and `pytest -m ollama` passes. Ran the 20 retrieval-benchmark questions through the full app: only 7/20 cited the expected PDF. A diagnosis showed that 11 of the misses had cited the right PDF with a "Source:" or "Citation:" prefix. The citation verifier accepted those but kept the prefix in the stored name, which also showed in the sources panel and the badge. Two more misses come from the benchmark naming `SE201_Week07_MCP_A2A_Accountability.pdf`, a longer Week 7 deck that isn't among the PDFs here. After the fixes, 17/20 cite the expected PDF (17/18 without the Week 7 questions), no citation names carry a prefix, and the follow-up answer has one badge. The one remaining miss is a correct answer with no citations, which the engine rightly marked ungrounded. Ran the full suite: 61 passing. Guru's `test_qa_solid.py` passes, and `eval_runner.py` gives the same 25 metrics and 20 outcomes as the committed results.
+
+### What I kept or changed
+The double badge came from earlier answers being sent back to the model as history with the badge still in them, so the orchestrator now strips the badge and the "not found" header from history. With my approval, the citation fix went into Guru's QA code: verified citations now take the retrieved chunk's real file name and location, and the duplicate verification loop in `components.py` now reuses the fixed function. I left Lichelle's `benchmark.json` unchanged and will report the Week 7 file mismatch to her. A test that relied on the local `.env` using the stub LLM now sets that itself.
+
+## 2026-11-09 · AI Log tab updates automatically
+- **Tool (model):** Claude Code (Claude Opus 5.5)
+- **Files:** frontend/components.py, backend/disclosure_log.py, tests/test_orchestrator.py
+- **Outcome:** Changed
+
+### What I asked for
+Whether the in-app AI Log tab is required, and whether it was being updated. It isn't required by the briefing, whose disclosure log is the team's development log, but the checkpoint report presents it as a delivered feature, so I kept it. I asked for it to update whenever a new entry is added, instead of only on page load or Refresh.
+
+### How I checked it
+A new test drives the polling handler: with no log yet it doesn't reload, after a question is asked the new entry appears, and with nothing new it leaves the table alone. Ran the full suite: 62 passing. Restarted the app and confirmed the page has the 2-second timer wired to the table, with its loading indicator hidden.
+
+### What I kept or changed
+The tab checks the log file's size and modification time every 2 seconds and reloads only when they change, so entries from any tab or session appear without flicker. I removed the Refresh button, which is no longer needed.

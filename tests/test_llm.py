@@ -171,8 +171,8 @@ def test_tag_without_version_means_latest(monkeypatch):
     assert create_llm().model_name == "ollama_chat/llama3.1"
 
 
-HOSTED = ["anthropic/claude-sonnet-5-5", "gemini/gemini-2.5-flash"]
-PROVIDER_KEYS = ["ANTHROPIC_API_KEY", "GEMINI_API_KEY", "GOOGLE_API_KEY"]
+HOSTED = ["anthropic/claude-haiku-5-5"]
+PROVIDER_KEYS = ["ANTHROPIC_API_KEY"]
 
 
 @pytest.fixture

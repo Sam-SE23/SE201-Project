@@ -30,6 +30,14 @@ class DisclosureLog:
         with self.path.open("a", encoding="utf-8") as f:
             f.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
+    def version(self) -> tuple[int, int] | None:
+        """A cheap fingerprint that changes whenever an entry is added (or None if no log yet)."""
+        try:
+            stat = self.path.stat()
+        except FileNotFoundError:
+            return None
+        return stat.st_mtime_ns, stat.st_size
+
     def tail(self, n: int = 20) -> list[dict]:
         if not self.path.exists():
             return []

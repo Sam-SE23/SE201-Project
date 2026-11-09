@@ -4,9 +4,9 @@ Provides:
     create_llm() -> LLMClient   # see backend/interfaces.py
 
 The model comes from STUDY_BUDDY_LLM_MODEL in .env. "ollama_chat/<tag>" uses a
-local Ollama model; a hosted model such as "anthropic/claude-sonnet-5-5" or
-"gemini/<model>" uses that provider instead, with its key in
-STUDY_BUDDY_LLM_API_KEY. Switching needs no code change.
+local Ollama model; a hosted model such as "anthropic/claude-haiku-5-5" uses
+that provider instead, with its key in STUDY_BUDDY_LLM_API_KEY. Switching needs
+no code change.
 """
 
 from __future__ import annotations
