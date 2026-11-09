@@ -74,7 +74,8 @@ def ask_tab(orch: Orchestrator) -> None:
     with gr.Tab("💬 Ask"):
         with gr.Row():
             with gr.Column(scale=3):
-                chatbot = gr.Chatbot(type="messages", height=460, label="Study Buddy")
+                chatbot = gr.Chatbot(type="messages", height=460, label="Study Buddy",
+                                     elem_id="chatbot")
                 with gr.Row():
                     question = gr.Textbox(placeholder="Ask about your course materials…",
                                           show_label=False, scale=5, autofocus=True,

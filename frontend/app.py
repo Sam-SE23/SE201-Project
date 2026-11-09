@@ -31,6 +31,11 @@ CUSTOM_HEAD = """<style>
 
 #status-line, #status-line * { overflow: visible !important; }
 
+/* The chat already scrolls inside its message list. Its outer box is also set to
+   scroll, and the "processing" timer overlay pushes it past its height, so a second
+   scrollbar appeared while an answer was generating. */
+#chatbot { overflow-y: hidden !important; }
+
 /* Right-clicking a table cell opens Gradio's cell menu, which only has editing
    actions. Our tables are read-only, so it shows up empty: hide it and its button. */
 .cell-menu, .cell-menu-button { display: none !important; }
