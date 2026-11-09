@@ -83,10 +83,12 @@ Add any new dependencies (e.g. `chromadb`, `anthropic`) to `requirements.txt`.
 
 | Component | Real module | Notes |
 |---|---|---|
-| Retriever | ✅ `backend/retrieval/__init__.py` | Adapter over the Chroma pipeline in `rag-pipeline/`. The first run downloads the `all-MiniLM-L6-v2` embedding model. The index lives in `backend/retrieval/rag-pipeline/store/` (git-ignored) and is shared with `build_index.py`. Hits below `MIN_SCORE` are dropped, so out-of-scope questions get no chunks. |
+| Retriever | ✅ `backend/retrieval/__init__.py` | Adapter over the hybrid pipeline in `rag-pipeline/`: vector search (Chroma) plus BM25 keyword search, reranked by a cross-encoder. The first run downloads the `BAAI/bge-small-en-v1.5` embedding model and the `ms-marco-MiniLM-L-6-v2` reranker. Both indexes live in `backend/retrieval/rag-pipeline/store/` (git-ignored) and are shared with `build_index.py`. Uploads add to Chroma and then rebuild the BM25 index from it. Reranker scores are converted to 0–1 probabilities, and hits below `MIN_SCORE` are dropped, so out-of-scope questions get no chunks. To remove a document, select its row in the Documents tab and press Remove. After a warning, it is dropped from both indexes, and its copies in `data/uploads/` and `rag-pipeline/data/` are deleted. `build_index.py --reset` only rebuilds from files still in `rag-pipeline/data/`. |
 | QA engine | ✅ `backend/qa/` | Works, but on the stub LLM the answers are placeholders; the app shows a warning. |
 | LLM | ❌ stub | Provider not chosen yet. |
 | Quiz engine | ✅ `backend/quiz/` | Generates cited multiple-choice questions, grades selections, and flags concepts to review. Uses the demo quiz until a real LLM is configured. |
+| LLM | ✅ `backend/llm/__init__.py` | LiteLLM client. Runs a local Ollama model (see below); a hosted model is a one-line `.env` change. Falls back to the stub, with the reason in the status line, if no model is set, Ollama isn't running or the model isn't pulled. |
+| Quiz engine | ❌ stub | |
 
 To run with real retrieval and the real QA engine, set these in `.env`:
 
@@ -108,6 +110,31 @@ STUDY_BUDDY_QUIZ=real
 ```
 
 Upload course materials, enter a topic in the Quiz tab, and select an answer for each question. The results list concepts with a missed question and the pages or slides to revisit. Run `pytest tests/test_quiz.py` to test the engine with scripted model responses.
+### Running with a local Ollama model
+
+1. Install [Ollama](https://ollama.com/download), then pull a model, e.g. `ollama pull qwen3:8b`.
+2. Run `ollama run qwen3:8b "hello"`, and while it's loaded check that `ollama ps` shows `100% GPU`. A CPU/GPU split means the model is too big for your VRAM.
+3. Set these in `.env`:
+
+   ```bash
+   STUDY_BUDDY_LLM=real
+   STUDY_BUDDY_LLM_MODEL=ollama_chat/qwen3:8b
+   STUDY_BUDDY_RETRIEVER=real
+   STUDY_BUDDY_QA=real
+   ```
+
+4. Run `python -m frontend.app`. The status line should show `llm: real (ollama_chat/qwen3:8b)`.
+
+To use a hosted model instead (e.g. Claude), change two lines; the code stays the same:
+
+```bash
+STUDY_BUDDY_LLM_MODEL=anthropic/claude-haiku-5-5
+STUDY_BUDDY_LLM_API_KEY=<your key>
+```
+
+The key setting has the same name whichever provider you use. If it's missing, the app falls back to the stub and the status line says to set it. A hosted model needs internet, costs per question, and sends your course material to the provider.
+
+`tests/test_llm.py` mocks LiteLLM, so it runs without Ollama. Its two `ollama` tests call the real model and are skipped unless Ollama is running with the model pulled. Run just those with `pytest -m ollama`.
 
 ## AI use log
 
@@ -139,20 +166,41 @@ pip install -r requirements.txt
    ```bash
    python -m pipeline.retrieve
    ```
+   Retrieval selects 50 BGE vector candidates and 50 BM25 keyword candidates,
+   merges their ranks with RRF, reranks the fused candidates with the
+   configured cross-encoder, and returns the best 5. If the reranker cannot
+   load, it explicitly falls back to the fused ranking.
+   Document text containing bounded instruction-like patterns is stripped before
+   indexing. Retrieved results expose `suspicious` and `warning` metadata; the
+   original source text is retained privately for audit/citation use.
+
+   Test sanitisation:
+   ```bash
+   pip install pytest
+   .\venv\Scripts\python.exe -m pytest tests\test_sanitize.py -q
+   ```
+4. Evaluate retrieval recall against labeled questions:
+   ```bash
+   python evaluate_retrieval.py
+   ```
+   Add questions and expected source pages to
+   `backend/retrieval/rag-pipeline/evaluation/benchmark.json`. Recall@k passes when
+   the expected source and page appear in the first `k` results.
 
 ## Project structure
 
 ```
-backend/retrieval/rag-pipeline
-├── config.py              # all tunable knobs (chunk size, top-k, model names)
+backend/retrieval/rag-pipeline/
+├── config.py              # all tunable knobs (chunk size, retrieval, model names)
 ├── build_index.py         # run this to (re)build the vector store
 ├── requirements.txt
 ├── data/                  # drop raw PDFs/PPTX here
-├── store/                 # Chroma's persisted DB (auto-created)
+├── store/                 # Chroma and BM25 persisted indexes (auto-created)
 └── pipeline/
     ├── ingest.py           # PDF/PPTX -> RawPage (text + source + page)
     ├── chunk.py             # RawPage -> Chunk (fixed-size, overlapping)
     ├── embed.py              # text -> vectors (sentence-transformers, local)
+    ├── retrieve.py           # candidate retrieval and cross-encoder reranking
     ├── store.py               # Chroma wrapper (add/reset)
     └── retrieve.py             # the function Member 2 calls
 ```
@@ -167,6 +215,9 @@ hits = retrieve("What is the refund policy?", k=5)
 ```
 
 This function's signature or return shape will not be changed arbitrarily.
+Returned hits may also include `suspicious` and `warning` fields when document
+sanitization detected instruction-like content. Downstream generation must treat
+all retrieved text as untrusted data, even when no warning is present.
 
 ## Tuning
 
@@ -177,6 +228,11 @@ Everything worth tuning lives in `config.py`:
   context, too high adds noise and cost.
 - `EMBEDDING_MODEL` — defaults to a free local model (`all-MiniLM-L6-v2`).
    May switch models when tuning it further.
+- `BM25_CANDIDATES` / `RRF_K` — keyword candidate count and RRF rank constant.
+
+Run `python build_index.py --reset` after changing documents, chunking, or
+embedding settings. This rebuilds both the Chroma vector collection and the
+persisted BM25 corpus.
 
 ## Known limitations (temporarily)
 

@@ -30,6 +30,10 @@ CUSTOM_HEAD = """<style>
 .no-scrollbar textarea::-webkit-scrollbar { display: none; }
 
 #status-line, #status-line * { overflow: visible !important; }
+
+/* Right-clicking a table cell opens Gradio's cell menu, which only has editing
+   actions. Our tables are read-only, so it shows up empty: hide it and its button. */
+.cell-menu, .cell-menu-button { display: none !important; }
 </style>"""
 
 
@@ -38,7 +42,7 @@ def build_app(orch: Orchestrator) -> gr.Blocks:
         gr.Markdown("# 📚 AI Study Buddy\nAsk questions about your course materials "
                     "and test yourself, with every answer cited back to the source.")
         gr.Markdown(DISCLOSURE)
-        gr.Markdown(fmt.status_line(orch.status, orch.warnings),
+        gr.Markdown(fmt.status_line(orch.status, orch.warnings, orch.llm.model_name),
                     elem_id="status-line", container=False)
         components.documents_tab(orch)
         components.ask_tab(orch)

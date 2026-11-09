@@ -77,6 +77,9 @@ class CtrlFBaseline:
         for path in paths:
             self._pages.extend(extract_pages(path))
 
+    def remove(self, source_file: str) -> None:
+        self._pages = [p for p in self._pages if p.source_file != source_file]
+
     def search(self, keyword: str) -> list[Hit]:
         """Exact, case-insensitive substring match. Returns every occurrence."""
         keyword = keyword.strip()

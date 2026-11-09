@@ -187,26 +187,29 @@ def _normalize_loc(loc: str) -> str:
     return s
 
 
-def verify_citation_against_chunks(
+def _chunk_source_and_location(c: Chunk | Mapping[str, Any]) -> tuple[str, str]:
+    """Return the (source file, location) a chunk was retrieved from."""
+    c_source = c.source_file if isinstance(c, Chunk) else (
+        c.get("source_file") or c.get("source_title") or c.get("source") or ""
+    )
+    c_loc = c.location if isinstance(c, Chunk) else (
+        c.get("location") or c.get("slide_or_page") or str(c.get("page") or "")
+    )
+    return c_source, c_loc
+
+
+def _matching_chunk(
     source: str,
     location: str,
     chunks: list[Chunk | Mapping[str, Any]],
-) -> tuple[bool, str]:
-    """Verify if a cited source and slide/page location exists in chunks_used.
-
-    Returns (is_valid, matching_quote).
-    """
+) -> Chunk | Mapping[str, Any] | None:
+    """Return the retrieved chunk a citation points to, or None if it matches none."""
     norm_source = source.strip().lower()
     norm_loc = _normalize_loc(location)
     loc_digits = re.findall(r"\d+", norm_loc)
 
     for c in chunks:
-        c_source = c.source_file if isinstance(c, Chunk) else (
-            c.get("source_file") or c.get("source_title") or c.get("source") or ""
-        )
-        c_loc = c.location if isinstance(c, Chunk) else (
-            c.get("location") or c.get("slide_or_page") or str(c.get("page") or "")
-        )
+        c_source, c_loc = _chunk_source_and_location(c)
         norm_c_source = c_source.strip().lower()
         norm_c_loc = _normalize_loc(c_loc)
         c_digits = re.findall(r"\d+", norm_c_loc)
@@ -223,10 +226,24 @@ def verify_citation_against_chunks(
         # Check location match (either normalized match or matching slide/page number)
         loc_matches = (norm_loc == norm_c_loc) or (loc_digits and c_digits and loc_digits[0] == c_digits[0])
         if loc_matches:
-            quote = c.text if isinstance(c, Chunk) else c.get("text", "")
-            return True, quote
+            return c
 
-    return False, ""
+    return None
+
+
+def verify_citation_against_chunks(
+    source: str,
+    location: str,
+    chunks: list[Chunk | Mapping[str, Any]],
+) -> tuple[bool, str]:
+    """Verify if a cited source and slide/page location exists in chunks_used.
+
+    Returns (is_valid, matching_quote).
+    """
+    c = _matching_chunk(source, location, chunks)
+    if c is None:
+        return False, ""
+    return True, c.text if isinstance(c, Chunk) else c.get("text", "")
 
 
 def extract_citations_from_text(
@@ -237,6 +254,8 @@ def extract_citations_from_text(
 
     If chunks are provided, programmatically verifies each citation against chunks_used metadata.
     Invalid citations that hallucinate non-existent slide/page numbers are dropped.
+    Verified citations use the matched chunk's real file name and location, so a
+    model's variations like "[Source: a.pdf, Page 2]" are stored as "a.pdf", "p.2".
     """
     citations: list[Citation] = []
     seen = set()
@@ -244,18 +263,20 @@ def extract_citations_from_text(
     for match in CITATION_PATTERN.finditer(response_text):
         source = match.group(1).strip()
         location = match.group(2).strip()
+
+        quote = ""
+        if chunks is not None:
+            c = _matching_chunk(source, location, chunks)
+            if c is None:
+                # Flagged as invalid / hallucinated citation not present in retrieved context
+                continue
+            source, location = _chunk_source_and_location(c)
+            quote = c.text if isinstance(c, Chunk) else c.get("text", "")
+
         key = (source.lower(), location.lower())
         if key in seen:
             continue
         seen.add(key)
-
-        quote = ""
-        if chunks is not None:
-            is_valid, matched_quote = verify_citation_against_chunks(source, location, chunks)
-            if not is_valid:
-                # Flagged as invalid / hallucinated citation not present in retrieved context
-                continue
-            quote = matched_quote
 
         citations.append(Citation(source_file=source, location=location, quote=quote))
 

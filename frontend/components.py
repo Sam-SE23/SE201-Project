@@ -10,6 +10,9 @@ from backend.interfaces import ChatTurn
 from backend.orchestrator import Orchestrator, QuizSession
 from frontend import formatting as fmt
 
+REMOVE_LABEL = "🗑 Remove selected document"
+LOG_POLL_SECONDS = 2
+
 
 def documents_tab(orch: Orchestrator) -> None:
     with gr.Tab("📄 Documents"):
@@ -21,14 +24,50 @@ def documents_tab(orch: Orchestrator) -> None:
         table = gr.Dataframe(headers=["File", "Chunks"], value=fmt.documents_rows(orch.documents()),
                              interactive=False, label="Ingested documents")
 
+        # Removing a document: select a row, press Remove, then confirm the warning.
+        selected = gr.State(None)
+        remove_btn = gr.Button(REMOVE_LABEL, interactive=False)
+        with gr.Group(visible=False) as confirm_box:
+            warning = gr.Markdown()
+            with gr.Row():
+                confirm_btn = gr.Button("Delete permanently", variant="stop")
+                cancel_btn = gr.Button("Cancel")
+
+        def clear_selection():
+            return None, gr.update(value=REMOVE_LABEL, interactive=False), gr.update(visible=False)
+
         def ingest(paths):
             if not paths:
-                return "Choose at least one file first.", fmt.documents_rows(orch.documents())
+                return ("Choose at least one file first.", fmt.documents_rows(orch.documents()),
+                        *clear_selection())
             result = orch.upload([Path(p) for p in paths])
             icon = "✅" if result.ok else "⚠️"
-            return f"{icon} {result.message}", fmt.documents_rows(result.documents)
+            return f"{icon} {result.message}", fmt.documents_rows(result.documents), *clear_selection()
 
-        ingest_btn.click(ingest, inputs=files, outputs=[status, table])
+        def select(rows, evt: gr.SelectData):
+            row = evt.index[0] if isinstance(evt.index, (list, tuple)) else evt.index
+            name = str(rows.iloc[row, 0])
+            return name, gr.update(value=f"🗑 Remove {name}", interactive=True), gr.update(visible=False)
+
+        def ask_to_confirm(name):
+            if not name:
+                return gr.update(visible=False), ""
+            return gr.update(visible=True), fmt.remove_warning(name)
+
+        def remove(name):
+            result = orch.remove(name)
+            icon = "✅" if result.ok else "⚠️"
+            return f"{icon} {result.message}", fmt.documents_rows(result.documents), *clear_selection()
+
+        def cancel():
+            return gr.update(visible=False)
+
+        selection = [selected, remove_btn, confirm_box]
+        ingest_btn.click(ingest, inputs=files, outputs=[status, table, *selection])
+        table.select(select, inputs=table, outputs=selection)
+        remove_btn.click(ask_to_confirm, inputs=selected, outputs=[confirm_box, warning])
+        confirm_btn.click(remove, inputs=selected, outputs=[status, table, *selection])
+        cancel_btn.click(cancel, outputs=confirm_box)
 
 
 def ask_tab(orch: Orchestrator) -> None:
@@ -150,8 +189,7 @@ def quiz_tab(orch: Orchestrator) -> None:
 def log_tab(orch: Orchestrator) -> None:
     with gr.Tab("🧾 AI Log"):
         gr.Markdown("Every AI interaction is recorded for transparency and evaluation "
-                    f"(`{orch.log.path.name}`). Most recent last.")
-        refresh = gr.Button("Refresh", size="sm")
+                    f"(`{orch.log.path.name}`). Most recent last; new entries appear automatically.")
 
         def load():
             rows = []
@@ -163,4 +201,16 @@ def log_tab(orch: Orchestrator) -> None:
         # A callable value is re-evaluated on every page load.
         table = gr.Dataframe(value=load, headers=["Time (UTC)", "Mode", "Input", "Model"],
                              interactive=False, wrap=True)
-        refresh.click(load, outputs=table)
+
+        # Poll the log file and reload the table only when an entry has been added,
+        # so new entries from any tab or session show up without a refresh.
+        seen = gr.State(orch.log.version())
+        timer = gr.Timer(LOG_POLL_SECONDS)
+
+        def poll(last_seen):
+            current = orch.log.version()
+            if current == last_seen:
+                return gr.skip(), last_seen
+            return load(), current
+
+        timer.tick(poll, inputs=seen, outputs=[table, seen], show_progress="hidden")

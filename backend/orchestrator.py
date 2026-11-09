@@ -7,6 +7,7 @@ caught here and turned into friendly messages, so the UI never shows a stack tra
 from __future__ import annotations
 
 import logging
+import re
 import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -14,11 +15,26 @@ from pathlib import Path
 from backend import config, registry
 from backend.baseline.ctrl_f import CtrlFBaseline, Hit
 from backend.disclosure_log import DisclosureLog
+from backend.files import delete_stored_copy
 from backend.interfaces import Answer, ChatTurn, Citation, Grade, QuizQuestion
 
 log = logging.getLogger(__name__)
 
 SUPPORTED = {".pdf", ".pptx"}
+
+# UI decoration added to displayed answers: the QA engine's confidence badge and
+# the GUI's "not found" header. The chat history the GUI sends back includes it,
+# and a model that sees it in its own earlier answers copies it into new ones.
+_DECORATION = re.compile(
+    r"^\s*(?:[🟢🟡🔴]\s*Grounding Confidence:.*|🔍\s*\*\*Not found in your materials\*\*)\s*$",
+    re.MULTILINE,
+)
+
+
+def _clean_history(history: list[ChatTurn]) -> list[ChatTurn]:
+    """Strip UI decoration from earlier assistant answers before they go to the LLM."""
+    return [ChatTurn(t.role, _DECORATION.sub("", t.content).strip()) if t.role == "assistant" else t
+            for t in history]
 
 
 @dataclass
@@ -96,6 +112,24 @@ class Orchestrator:
             msg += f" Skipped unsupported: {', '.join(bad)}."
         return UploadResult(True, msg, self.documents())
 
+    def remove(self, name: str) -> UploadResult:
+        """Remove an ingested file: questions stop using it, and the app's stored
+        copies are deleted. Originals elsewhere on the computer are not touched."""
+        if not hasattr(self.retriever, "remove"):
+            return UploadResult(False, "Removing documents needs the real retriever "
+                                       "(STUDY_BUDDY_RETRIEVER=real).", self.documents())
+        if name not in self.documents():
+            return UploadResult(False, f"Not found: {name}", self.documents())
+        try:
+            chunks = self.retriever.remove(name)
+            self.baseline.remove(name)
+            delete_stored_copy(self.upload_dir, name)
+        except Exception as e:  # noqa: BLE001
+            log.exception("remove failed")
+            return UploadResult(False, f"Couldn't remove {name}: {e}", self.documents())
+        return UploadResult(True, f"Removed **{name}** ({chunks} chunks) and deleted its stored copy.",
+                            self.documents())
+
     def documents(self) -> dict[str, int]:
         return self.retriever.list_documents()
 
@@ -109,7 +143,7 @@ class Orchestrator:
             return Answer("Upload some course materials in the **Documents** tab first.",
                           grounded=False)
         try:
-            answer = self.qa.answer(question, self.retriever, history)
+            answer = self.qa.answer(question, self.retriever, _clean_history(history))
         except Exception as e:  # noqa: BLE001
             log.exception("qa failed")
             return Answer(f"Something went wrong while answering: {e}", grounded=False)

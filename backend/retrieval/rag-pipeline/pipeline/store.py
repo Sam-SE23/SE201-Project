@@ -30,7 +30,16 @@ def add_chunks(chunks, embeddings):
         ids=[c.id for c in chunks],
         embeddings=embeddings,
         documents=[c.text for c in chunks],
-        metadatas=[{"source": c.source, "page": c.page} for c in chunks],
+        metadatas=[
+            {
+                "source": c.source,
+                "page": c.page,
+                "original_text": c.original_text,
+                "suspicious": c.suspicious,
+                "warning": c.warning or "",
+            }
+            for c in chunks
+        ],
     )
     return collection
 

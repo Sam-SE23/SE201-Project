@@ -10,8 +10,13 @@ QUOTE_CHARS = 400
 MAX_HITS = 20
 
 
-def status_line(status: dict[str, str], warnings: list[str]) -> str:
-    parts = " · ".join(f"{name}: `{mode}`" for name, mode in status.items())
+def status_line(status: dict[str, str], warnings: list[str], model: str | None = None) -> str:
+    def part(name: str, mode: str) -> str:
+        if name == "llm" and mode == "real" and model:
+            return f"{name}: `{mode}` ({model})"
+        return f"{name}: `{mode}`"
+
+    parts = " · ".join(part(name, mode) for name, mode in status.items())
     text = f"<sub>Components: {parts}</sub>"
     for w in warnings:
         text += f"\n\n⚠️ <sub>{w}</sub>"
@@ -61,6 +66,13 @@ def hits_markdown(keyword: str, hits: list[Hit]) -> str:
 
 def documents_rows(documents: dict[str, int]) -> list[list]:
     return [[name, count] for name, count in sorted(documents.items())]
+
+
+def remove_warning(name: str) -> str:
+    return (f"⚠️ **Remove {name}?** This permanently deletes it from the app's internal "
+            "storage: the search index and the stored copy in `data/`. Questions will no "
+            "longer use it. Your original file elsewhere isn't affected. "
+            "**This can't be undone.**")
 
 
 def quiz_progress(session: QuizSession) -> str:

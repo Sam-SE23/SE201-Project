@@ -6,7 +6,11 @@ python-dotenv
 # real retriever (backend/retrieval/rag-pipeline)
 sentence-transformers>=2.7.0
 chromadb>=0.5.0
+rank_bm25
 tqdm>=4.66.0
+
+# real LLM (backend/llm)
+litellm
 
 # tests only
 pytest
