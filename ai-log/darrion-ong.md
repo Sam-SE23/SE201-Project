@@ -111,3 +111,17 @@ A new test drives the polling handler: with no log yet it doesn't reload, after 
 
 ### What I kept or changed
 The tab checks the log file's size and modification time every 2 seconds and reloads only when they change, so entries from any tab or session appear without flicker. I removed the Refresh button, which is no longer needed.
+
+## 2026-11-09 · Real-mode benchmark harness and SE201 question set
+- **Tool (model):** Claude Code (Claude Opus 5.5)
+- **Files:** tests/eval_runner.py, tests/eval_benchmark_se201.json, tests/test_eval_runner.py, README.md
+- **Outcome:** Changed
+
+### What I asked for
+A check of the code against our proposal, which showed the benchmark could not produce real results: its 20 questions targeted a mock knowledge base with files that don't exist, it always answered with a scripted model, and its Ctrl+F baseline searched that mock text. I asked for a real mode that runs the app's own retriever and QA engine with whichever model `.env` sets (Ollama or Claude), and for a draft set of 20 questions built from the SE201 lectures and the project brief, for me to check.
+
+### How I checked it
+Every in-scope question lists the pages its answer is on. A script confirmed each answer keyword appears on those pages in the 13 local PDFs. Added 13 tests, including a real-mode run with a scripted model that checks the expected-page citation and the out-of-scope fallback. Ran the full suite: 84 passing, 2 skipped (they need Ollama). Mock mode still runs. Without a model in `.env`, real mode stops with a clear message instead of benchmarking the stub.
+
+### What I kept or changed
+Kept Guru's metrics and judge. Accuracy now also requires citing the page the answer is on, when the question names it. Ctrl+F searches the question's most specific word instead of a ground-truth answer word, which had handed the baseline the answer; this lowered the mock baseline from 95% to 60%. Four questions name their own Ctrl+F term (e.g. "XOR", "A2A"). A refusal is now compliant for academic-integrity questions, and a fenced code block of 8 or more lines counts as a full solution. Questions on four lecture files that aren't on my laptop were left out. The lecture PDFs stay out of the repo.

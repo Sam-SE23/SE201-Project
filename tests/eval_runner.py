@@ -1,15 +1,27 @@
 """Automated evaluation test runner and LLM-as-a-Judge for Grounded Q&A.
 
-Iterates through tests/eval_benchmark.json, passes each test case through
+Iterates through a benchmark file, passes each test case through
 GroundedQAEngine, computes project evaluation metrics, and saves results.
+
+Two modes:
+    python tests/eval_runner.py
+        Mock mode: scripted LLM over the built-in knowledge base (checks the harness).
+    python tests/eval_runner.py --real --docs <folder of course PDF/PPTX>
+        Real mode: the app's own retriever, QA engine and the LLM set in .env,
+        over tests/eval_benchmark_se201.json. Results go to
+        tests/eval_results_<model>.json, so runs on different models are kept.
 """
 
 from __future__ import annotations
 
+import argparse
 import json
 import logging
 import re
 import sys
+import tempfile
+import time
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -395,7 +407,20 @@ def judge_response(
             "reason": "Correctly triggered exact out-of-scope fallback refusal" if is_fallback else "Failed to trigger out-of-scope fallback",
         }
 
-    # 2. Check for unexpected fallback on in-scope queries
+    # 2. Declining a graded-work request outright is compliant, not a false fallback
+    if is_fallback and category == "academic_integrity":
+        return {
+            "faithfulness": 1,
+            "completeness": 1,
+            "citation_validity": 1,
+            "context_precision": 100.0,
+            "faithfulness_ratio": 100.0,
+            "failure_category": None,
+            "overall_pass": True,
+            "reason": "Declined to produce the graded work",
+        }
+
+    # Check for unexpected fallback on in-scope queries
     if is_fallback and category != "out_of_scope":
         return {
             "faithfulness": 1,
@@ -455,7 +480,10 @@ def judge_response(
     # Academic integrity compliance check
     if category == "academic_integrity":
         # Should not give complete ready-to-submit code solutions, but structured Socratic pseudocode/hints are allowed
-        gives_full_code = "return [chunk(" in resp_lower and "def retrieve(self," in resp_lower and "class vectorretriever" in resp_lower
+        gives_full_code = (
+            ("return [chunk(" in resp_lower and "def retrieve(self," in resp_lower and "class vectorretriever" in resp_lower)
+            or has_full_code_block(response_text)
+        )
         academic_integrity_pass = not gives_full_code and (
             "guidance" in resp_lower or "hints" in resp_lower or "policy" in resp_lower or "cannot" in resp_lower or "socratic" in resp_lower or "step" in resp_lower
         )
@@ -529,6 +557,64 @@ def judge_response(
 
 
 # ---------------------------------------------------------------------------
+# Real-corpus checks: expected pages, Ctrl+F search term, full-code answers
+# ---------------------------------------------------------------------------
+
+# Words a student wouldn't type into Ctrl+F; the search term is the longest remaining word.
+CTRL_F_STOPWORDS = {
+    "what", "which", "when", "where", "does", "how", "why", "with", "from", "that", "this",
+    "they", "their", "them", "about", "into", "each", "between", "according", "course",
+    "material", "materials", "lecture", "explain", "describe", "difference", "differ",
+    "including", "change", "changes", "should", "would", "could", "trusting", "before",
+    "after", "during", "harder", "ordinary",
+}
+
+# A fenced code block this long is a ready-to-submit solution, not a hint.
+FULL_CODE_MIN_LINES = 8
+
+
+def _page_numbers(location: str) -> set[int]:
+    return {int(n) for n in re.findall(r"\d+", location)}
+
+
+def _same_source(cited: str, expected: str) -> bool:
+    cited, expected = cited.strip().lower(), expected.strip().lower()
+    stem = expected.rsplit(".", 1)[0]
+    return bool(cited) and (cited in expected or expected in cited or stem in cited)
+
+
+def cites_expected(citations: list[tuple[str, str]], expected: list[dict[str, Any]]) -> bool:
+    """True if any (source, location) citation names an expected source and one of its pages."""
+    for source, location in citations:
+        pages = _page_numbers(location)
+        for exp in expected:
+            if _same_source(source, exp["source"]) and pages & set(exp["pages"]):
+                return True
+    return False
+
+
+def answer_citations(answer: Answer) -> list[tuple[str, str]]:
+    """Citations the engine extracted, plus any [source, location] written in the text."""
+    pairs = [(c.source_file, c.location) for c in answer.citations]
+    pairs += [(m.group(1), m.group(2)) for m in CITATION_PATTERN.finditer(answer.text)]
+    return pairs
+
+
+def ctrl_f_term(question: str) -> str:
+    """What a student would type into Ctrl+F: the question's most specific word."""
+    words = [w for w in re.findall(r"[A-Za-z][A-Za-z0-9+\-]{3,}", question)
+             if w.lower() not in CTRL_F_STOPWORDS]
+    return max(words, key=len) if words else question
+
+
+def has_full_code_block(text: str) -> bool:
+    for block in re.findall(r"```[^\n]*\n(.*?)```", text, re.DOTALL):
+        if len([line for line in block.splitlines() if line.strip()]) >= FULL_CODE_MIN_LINES:
+            return True
+    return False
+
+
+# ---------------------------------------------------------------------------
 # Runner Execution
 # ---------------------------------------------------------------------------
 
@@ -537,10 +623,16 @@ def run_evaluation(
     output_results_file: Path = ROOT / "tests" / "eval_results.json",
     qa_engine: GroundedQAEngine | None = None,
     retriever: Retriever | None = None,
+    ctrl_f_baseline: CtrlFBaseline | None = None,
+    model_name: str = BenchmarkLLMClient.model_name,
+    corpus_files: list[str] | None = None,
+    limit: int | None = None,
 ) -> dict[str, Any]:
     """Execute evaluation benchmark and compute aggregate metrics."""
     with open(benchmark_file, "r", encoding="utf-8") as f:
         benchmark_cases = json.load(f)
+    if limit is not None:
+        benchmark_cases = benchmark_cases[:limit]
 
     if retriever is None:
         retriever = BenchmarkRetriever()
@@ -549,12 +641,13 @@ def run_evaluation(
         llm = BenchmarkLLMClient()
         qa_engine = GroundedQAEngine(llm=llm, top_k=4)
 
-    # Initialize Ctrl+F baseline over the benchmark knowledge base
-    ctrl_f_baseline = CtrlFBaseline()
-    ctrl_f_baseline._pages = [
-        Page(source_file=c.source_file, location=c.location, text=c.text)
-        for c in BENCHMARK_KNOWLEDGE_BASE
-    ]
+    if ctrl_f_baseline is None:
+        # Mock mode: Ctrl+F over the benchmark knowledge base
+        ctrl_f_baseline = CtrlFBaseline()
+        ctrl_f_baseline._pages = [
+            Page(source_file=c.source_file, location=c.location, text=c.text)
+            for c in BENCHMARK_KNOWLEDGE_BASE
+        ]
 
     results: list[dict[str, Any]] = []
 
@@ -570,6 +663,11 @@ def run_evaluation(
 
     total_context_precision = 0.0
     total_faithfulness_ratio = 0.0
+    total_seconds = 0.0
+
+    # Questions that name the pages their answer is on (real benchmark only)
+    expected_citation_count = 0
+    cited_expected_count = 0
 
     # Failure Taxonomy Tracking
     taxonomy_counts: dict[str, int] = {
@@ -577,12 +675,15 @@ def run_evaluation(
         "Attention Drift": 0,
         "False-Negative Fallback": 0,
         "Citation Format Error": 0,
+        "Wrong Source Cited": 0,
+        "Error": 0,
     }
 
     # Baseline tracking
     ctrl_f_correct_count = 0
     ctrl_f_in_scope_with_citations = 0
     ctrl_f_fallback_count = 0
+    ctrl_f_phrase_zero_count = 0
 
     for item in benchmark_cases:
         qid = item["id"]
@@ -590,9 +691,66 @@ def run_evaluation(
         question = item["question"]
         is_in_scope = item.get("is_in_scope", True)
         keywords = item.get("ground_truth_keywords", [])
+        expected = item.get("expected_sources")
 
-        # 1. Execute Grounded QA
-        answer: Answer = qa_engine.answer(question=question, retriever=retriever, history=[])
+        # 1. Ctrl+F baseline: search the question's most specific word, as a student would.
+        # The whole question as one phrase is recorded too; it almost never matches.
+        search_kw = item.get("ctrl_f_term") or ctrl_f_term(question)
+        ctrl_f_hits = ctrl_f_baseline.search(search_kw)
+        phrase_hits = len(ctrl_f_baseline.search(question))
+        if phrase_hits == 0:
+            ctrl_f_phrase_zero_count += 1
+
+        if category == "out_of_scope":
+            # Out-of-scope passes if no hits found in course materials
+            if len(ctrl_f_hits) == 0:
+                ctrl_f_fallback_count += 1
+                ctrl_f_correct_count += 1
+        elif ctrl_f_hits:
+            ctrl_f_in_scope_with_citations += 1
+            if expected:
+                # In-scope passes if a hit lands on a page the answer is on
+                found = cites_expected([(h.source_file, h.location) for h in ctrl_f_hits], expected)
+            else:
+                # In-scope passes if at least one hit matches ground truth keywords
+                hit_texts = " ".join(h.snippet.lower() for h in ctrl_f_hits)
+                found = any(kw.lower() in hit_texts for kw in keywords)
+            if found:
+                ctrl_f_correct_count += 1
+
+        # 2. Execute Grounded QA. A failed call (e.g. a model timeout) is recorded, not fatal.
+        started = time.perf_counter()
+        try:
+            answer: Answer = qa_engine.answer(question=question, retriever=retriever, history=[])
+            error = None
+        except Exception as e:  # noqa: BLE001
+            error = f"{type(e).__name__}: {e}"
+        seconds = round(time.perf_counter() - started, 2)
+        total_seconds += seconds
+
+        if error is not None:
+            log.warning("%s failed: %s", qid, error)
+            taxonomy_counts["Error"] += 1
+            if category == "out_of_scope":
+                out_of_scope_count += 1
+            else:
+                in_scope_count += 1
+            if category == "academic_integrity":
+                academic_integrity_count += 1
+            if expected:
+                expected_citation_count += 1
+            results.append({
+                "id": qid,
+                "category": category,
+                "question": question,
+                "error": error,
+                "passed": False,
+                "seconds": seconds,
+                "ctrl_f_term": search_kw,
+                "ctrl_f_hits_count": len(ctrl_f_hits),
+                "ctrl_f_phrase_hits": phrase_hits,
+            })
+            continue
 
         # Evaluate response via judge
         judge_res = judge_response(
@@ -606,12 +764,23 @@ def run_evaluation(
         is_fallback = is_out_of_scope_response(answer.text)
         has_citations = len(answer.citations) > 0 or bool(CITATION_PATTERN.search(answer.text))
 
+        # Accuracy needs the right source, not just any citation, when the pages are known
+        cited_expected = None
+        if expected:
+            expected_citation_count += 1
+            cited_expected = cites_expected(answer_citations(answer), expected)
+            if cited_expected:
+                cited_expected_count += 1
+        passed = judge_res["overall_pass"] and cited_expected is not False
+
         total_context_precision += judge_res["context_precision"]
         total_faithfulness_ratio += judge_res["faithfulness_ratio"]
 
         # Track failure taxonomy if applicable
         if not judge_res["overall_pass"] and judge_res["failure_category"]:
             taxonomy_counts[judge_res["failure_category"]] = taxonomy_counts.get(judge_res["failure_category"], 0) + 1
+        elif judge_res["overall_pass"] and not passed:
+            taxonomy_counts["Wrong Source Cited"] += 1
 
         # Metrics categorization for Grounded QA
         if category == "out_of_scope":
@@ -625,33 +794,13 @@ def run_evaluation(
                 in_scope_with_citations += 1
             if judge_res["faithfulness"] == 0:
                 hallucination_count += 1
-            if judge_res["overall_pass"]:
+            if passed:
                 passed_accuracy_count += 1
 
         if category == "academic_integrity":
             academic_integrity_count += 1
             if judge_res["faithfulness"] == 1:
                 academic_integrity_compliant += 1
-
-        # 2. Execute Ctrl+F Baseline Search
-        # Plain keyword search uses key query terms (excluding common stopwords)
-        q_words = [w for w in re.findall(r"\w+", question.lower()) if len(w) > 3]
-        search_kw = keywords[0] if keywords else (q_words[0] if q_words else question)
-        ctrl_f_hits = ctrl_f_baseline.search(search_kw)
-
-        # Baseline evaluation
-        if category == "out_of_scope":
-            # Out-of-scope passes if no hits found in course materials
-            if len(ctrl_f_hits) == 0:
-                ctrl_f_fallback_count += 1
-                ctrl_f_correct_count += 1
-        else:
-            # In-scope passes if at least one hit matches ground truth keywords
-            if ctrl_f_hits:
-                ctrl_f_in_scope_with_citations += 1
-                hit_texts = " ".join(h.snippet.lower() for h in ctrl_f_hits)
-                if any(kw.lower() in hit_texts for kw in keywords):
-                    ctrl_f_correct_count += 1
 
         results.append({
             "id": qid,
@@ -660,8 +809,13 @@ def run_evaluation(
             "response": answer.text,
             "citations_extracted": [f"{c.source_file}, {c.location}" for c in answer.citations],
             "grounded": answer.grounded,
+            "passed": passed,
+            "cited_expected_page": cited_expected,
+            "seconds": seconds,
             "judge_evaluation": judge_res,
+            "ctrl_f_term": search_kw,
             "ctrl_f_hits_count": len(ctrl_f_hits),
+            "ctrl_f_phrase_hits": phrase_hits,
         })
 
     # Metric calculations
@@ -675,13 +829,22 @@ def run_evaluation(
 
     avg_context_precision = round(total_context_precision / total_questions, 2)
     avg_faithfulness_ratio = round(total_faithfulness_ratio / total_questions, 2)
+    correct_source_citation_pct = (
+        round((cited_expected_count / expected_citation_count) * 100, 2)
+        if expected_citation_count else None
+    )
 
     # Ctrl+F Baseline metrics
     ctrl_f_accuracy_pct = round((ctrl_f_correct_count / total_questions) * 100, 2)
     ctrl_f_citation_pct = round((ctrl_f_in_scope_with_citations / max(in_scope_count, 1)) * 100, 2)
     ctrl_f_fallback_pct = round((ctrl_f_fallback_count / max(out_of_scope_count, 1)) * 100, 2)
+    ctrl_f_phrase_zero_pct = round((ctrl_f_phrase_zero_count / total_questions) * 100, 2)
 
     summary = {
+        "model": model_name,
+        "run_at": datetime.now().isoformat(timespec="seconds"),
+        "corpus_files": corpus_files or ["benchmark knowledge base (mock)"],
+        "avg_seconds_per_question": round(total_seconds / total_questions, 2),
         "total_questions": total_questions,
         "in_scope_questions": in_scope_count,
         "out_of_scope_questions": out_of_scope_count,
@@ -694,12 +857,15 @@ def run_evaluation(
             "academic_integrity_compliance_pct": academic_integrity_pct,
             "avg_context_precision_pct": avg_context_precision,
             "avg_faithfulness_ratio_pct": avg_faithfulness_ratio,
+            "correct_source_citation_pct": correct_source_citation_pct,
         },
         "failure_taxonomy": taxonomy_counts,
         "baseline_comparison": {
+            "ctrl_f_search_method": "most specific word of the question",
             "ctrl_f_accuracy_pct": ctrl_f_accuracy_pct,
             "ctrl_f_citation_pct": ctrl_f_citation_pct,
             "ctrl_f_fallback_pct": ctrl_f_fallback_pct,
+            "ctrl_f_whole_question_zero_hits_pct": ctrl_f_phrase_zero_pct,
         },
         "target_benchmarks": {
             "overall_accuracy_pct": ">= 85%",
@@ -723,12 +889,12 @@ def run_evaluation(
         json.dump(output_data, f, indent=2)
 
     # Print clean summary table
-    print_summary_table(summary)
+    print_summary_table(summary, output_results_file)
 
     return output_data
 
 
-def print_summary_table(summary: dict[str, Any]) -> None:
+def print_summary_table(summary: dict[str, Any], output_file: Path | None = None) -> None:
     """Print terminal summary table formatted cleanly."""
     m = summary["metrics"]
     b = summary["baseline_comparison"]
@@ -747,10 +913,16 @@ def print_summary_table(summary: dict[str, Any]) -> None:
     diff_cit = m["citation_presence_rate_pct"] - b["ctrl_f_citation_pct"]
     diff_fb = m["fallback_accuracy_pct"] - b["ctrl_f_fallback_pct"]
 
+    src = m.get("correct_source_citation_pct")
+    source_row = (f"\n Correct Source Cited (expected page): {src:>6.2f}%      reported      [INFO]"
+                  if src is not None else "")
+
     table = f"""
 ========================================================================================
-                      GROUNDED Q&A EVALUATION BENCHMARK RESULTS                         
+                      GROUNDED Q&A EVALUATION BENCHMARK RESULTS
 ========================================================================================
+ Model                  : {summary.get('model', 'unknown')}
+ Avg time per question  : {summary.get('avg_seconds_per_question', 0):.2f} s
  Total Questions Tested : {summary['total_questions']}
  - In-Scope (Facts/Synthesis) : {summary['in_scope_questions']}
  - Academic Integrity Audits  : {summary['academic_integrity_questions']}
@@ -764,7 +936,7 @@ def print_summary_table(summary: dict[str, Any]) -> None:
  Out-of-Scope Fallback Pass Rate     : {m['fallback_accuracy_pct']:>6.2f}%      {t['fallback_accuracy_pct']:<10}    [{fb_status}]
  Academic Integrity Compliance       : {m['academic_integrity_compliance_pct']:>6.2f}%      {t['academic_integrity_compliance_pct']:<10}    [{ai_status}]
  RAGAS Context Precision             : {m['avg_context_precision_pct']:>6.2f}%      {t['avg_context_precision_pct']:<10}    [{cp_status}]
- RAGAS Faithfulness Ratio            : {m['avg_faithfulness_ratio_pct']:>6.2f}%      {t['avg_faithfulness_ratio_pct']:<10}    [{fr_status}]
+ RAGAS Faithfulness Ratio            : {m['avg_faithfulness_ratio_pct']:>6.2f}%      {t['avg_faithfulness_ratio_pct']:<10}    [{fr_status}]{source_row}
 ----------------------------------------------------------------------------------------
                         AUTOMATED FAILURE TAXONOMY BREAKDOWN                            
 ----------------------------------------------------------------------------------------
@@ -772,6 +944,8 @@ def print_summary_table(summary: dict[str, Any]) -> None:
  Attention Drift            : {tax.get('Attention Drift', 0)}
  False-Negative Fallback    : {tax.get('False-Negative Fallback', 0)}
  Citation Format Error      : {tax.get('Citation Format Error', 0)}
+ Wrong Source Cited         : {tax.get('Wrong Source Cited', 0)}
+ Error (call failed)        : {tax.get('Error', 0)}
 ----------------------------------------------------------------------------------------
                         NON-AI BASELINE (Ctrl+F) COMPARISON                             
 ----------------------------------------------------------------------------------------
@@ -780,11 +954,79 @@ def print_summary_table(summary: dict[str, Any]) -> None:
  Answer Accuracy %                 : {m['overall_accuracy_pct']:>6.2f}%           {b['ctrl_f_accuracy_pct']:>6.2f}%       +{diff_acc:>5.2f}%
  Citation Precision %              : {m['citation_presence_rate_pct']:>6.2f}%           {b['ctrl_f_citation_pct']:>6.2f}%       +{diff_cit:>5.2f}%
  Out-of-Scope Fallback Pass Rate % : {m['fallback_accuracy_pct']:>6.2f}%           {b['ctrl_f_fallback_pct']:>6.2f}%       +{diff_fb:>5.2f}%
+ Whole question as one Ctrl+F phrase: 0 hits on {b.get('ctrl_f_whole_question_zero_hits_pct', 0):.2f}% of questions
 ========================================================================================
- Results successfully logged to: tests/eval_results.json
+ Results successfully logged to: {output_file or 'tests/eval_results.json'}
 """
     print(table)
 
 
+# ---------------------------------------------------------------------------
+# Real mode: the app's own components over the course files
+# ---------------------------------------------------------------------------
+
+def build_real_system(docs_dir: Path, work_dir: Path):
+    """Index the course files with the app's retriever and Ctrl+F, and build the QA engine.
+
+    Calls create_llm() directly rather than through the registry, which would
+    quietly fall back to the stub LLM and produce a meaningless run.
+    """
+    from backend.llm import create_llm
+    from backend.retrieval import ChromaRetriever
+
+    llm = create_llm()  # raises with a clear message if no model is usable
+    files = sorted(p for p in Path(docs_dir).iterdir() if p.suffix.lower() in {".pdf", ".pptx"})
+    if not files:
+        raise ValueError(f"No PDF or PPTX files in {docs_dir}")
+
+    # A throwaway index, so the app's own store is never touched
+    retriever = ChromaRetriever(store_dir=work_dir / "store", data_dir=work_dir / "data")
+    print(f"Indexing {len(files)} file(s) from {docs_dir} ...")
+    retriever.ingest(files)
+    baseline = CtrlFBaseline()
+    baseline.index(files)
+    return create_qa_engine(llm), retriever, baseline, llm.model_name, [f.name for f in files]
+
+
+def _slug(text: str) -> str:
+    return re.sub(r"[^A-Za-z0-9]+", "-", text).strip("-").lower()
+
+
+def main(argv: list[str] | None = None) -> dict[str, Any]:
+    parser = argparse.ArgumentParser(description="Run the grounded Q&A benchmark.")
+    parser.add_argument("--real", action="store_true",
+                        help="use the app's retriever, QA engine and the LLM set in .env")
+    parser.add_argument("--docs", type=Path, help="folder of course PDF/PPTX files (real mode)")
+    parser.add_argument("--benchmark", type=Path, help="benchmark JSON file")
+    parser.add_argument("--out", type=Path, help="results JSON file")
+    parser.add_argument("--limit", type=int, help="only run the first N questions")
+    args = parser.parse_args(argv)
+
+    if not args.real:
+        return run_evaluation(
+            benchmark_file=args.benchmark or ROOT / "tests" / "eval_benchmark.json",
+            output_results_file=args.out or ROOT / "tests" / "eval_results.json",
+            limit=args.limit,
+        )
+
+    if args.docs is None:
+        parser.error("--real needs --docs <folder of course PDF/PPTX files>")
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+        try:
+            qa_engine, retriever, baseline, model, files = build_real_system(args.docs, Path(tmp))
+        except (ValueError, RuntimeError, OSError) as e:
+            raise SystemExit(f"Can't start the real system: {e}") from e
+        return run_evaluation(
+            benchmark_file=args.benchmark or ROOT / "tests" / "eval_benchmark_se201.json",
+            output_results_file=args.out or ROOT / "tests" / f"eval_results_{_slug(model)}.json",
+            qa_engine=qa_engine,
+            retriever=retriever,
+            ctrl_f_baseline=baseline,
+            model_name=model,
+            corpus_files=files,
+            limit=args.limit,
+        )
+
+
 if __name__ == "__main__":
-    run_evaluation()
+    main()

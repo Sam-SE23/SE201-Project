@@ -1,0 +1,238 @@
+[
+  {
+    "id": "se01",
+    "category": "explicit_fact",
+    "topic": "LLM fundamentals",
+    "question": "What is a large language model (LLM), according to the course material?",
+    "ground_truth_keywords": ["deep learning", "natural language processing", "transformer", "large text"],
+    "expected_citation_type": "slide_or_page",
+    "expected_sources": [
+      {"source": "SE201_Week01_From_Text_to_Tokens.pdf", "pages": [25]}
+    ],
+    "is_in_scope": true
+  },
+  {
+    "id": "se02",
+    "category": "explicit_fact",
+    "topic": "Neural networks",
+    "question": "Why can't a single neuron represent the XOR function?",
+    "ctrl_f_term": "XOR",
+    "ground_truth_keywords": ["linearly separable", "single neuron", "hidden layer", "line"],
+    "expected_citation_type": "slide_or_page",
+    "expected_sources": [
+      {"source": "SE201_Week02_Simple_Neural_Networks.pdf", "pages": [7, 35, 50, 53]}
+    ],
+    "is_in_scope": true
+  },
+  {
+    "id": "se03",
+    "category": "explicit_fact",
+    "topic": "Training neural networks",
+    "question": "What does back-propagation compute when training a neural network?",
+    "ground_truth_keywords": ["slope", "gradient", "chain rule", "weight"],
+    "expected_citation_type": "slide_or_page",
+    "expected_sources": [
+      {"source": "SE201_Week03_Training_Neural_Networks.pdf", "pages": [23, 30, 31, 42]}
+    ],
+    "is_in_scope": true
+  },
+  {
+    "id": "se04",
+    "category": "explicit_fact",
+    "topic": "Text generation",
+    "question": "What does the temperature setting do during text generation?",
+    "ground_truth_keywords": ["softmax", "flatter", "sharper", "logits"],
+    "expected_citation_type": "slide_or_page",
+    "expected_sources": [
+      {"source": "SE201_Week05_Generation_and_Evaluation.pdf", "pages": [16]}
+    ],
+    "is_in_scope": true
+  },
+  {
+    "id": "se05",
+    "category": "explicit_fact",
+    "topic": "Agent protocols",
+    "question": "What does the A2A protocol standardise between agents?",
+    "ctrl_f_term": "A2A",
+    "ground_truth_keywords": ["agent card", "client agent", "remote agent", "discovery", "task"],
+    "expected_citation_type": "slide_or_page",
+    "expected_sources": [
+      {"source": "SE201_Week07_MCP_A2A.pdf", "pages": [23, 25, 26, 27, 31]}
+    ],
+    "is_in_scope": true
+  },
+  {
+    "id": "se06",
+    "category": "explicit_fact",
+    "topic": "Frameworks",
+    "question": "What are LangChain and LangGraph, and how do they relate?",
+    "ground_truth_keywords": ["model interface", "runtime", "agent", "steps"],
+    "expected_citation_type": "slide_or_page",
+    "expected_sources": [
+      {"source": "SE201_Week09_LangChain_LangGraph.pdf", "pages": [2, 6]}
+    ],
+    "is_in_scope": true
+  },
+  {
+    "id": "se07",
+    "category": "explicit_fact",
+    "topic": "Project logistics",
+    "question": "When is the project checkpoint due?",
+    "ground_truth_keywords": ["18 October", "23:59", "Sunday"],
+    "expected_citation_type": "slide_or_page",
+    "expected_sources": [
+      {"source": "SE201_2026T1_project_v1.02.pdf", "pages": [1]}
+    ],
+    "is_in_scope": true
+  },
+  {
+    "id": "se08",
+    "category": "explicit_fact",
+    "topic": "Project logistics",
+    "question": "How much time does each team get for the final presentation, including Q&A?",
+    "ground_truth_keywords": ["20 minutes", "15 minutes", "5 minutes", "Q&A"],
+    "expected_citation_type": "slide_or_page",
+    "expected_sources": [
+      {"source": "SE201_2026T1_project_v1.02.pdf", "pages": [3]}
+    ],
+    "is_in_scope": true
+  },
+  {
+    "id": "se09",
+    "category": "synthesis",
+    "topic": "Neural networks",
+    "question": "How is a single neuron's output computed, and how are its weights learned during training?",
+    "ctrl_f_term": "neuron",
+    "ground_truth_keywords": ["weighted sum", "bias", "activation", "gradient", "back-propagation"],
+    "expected_citation_type": "slide_or_page",
+    "expected_sources": [
+      {"source": "SE201_Week02_Simple_Neural_Networks.pdf", "pages": [6, 14, 59]},
+      {"source": "SE201_Week03_Training_Neural_Networks.pdf", "pages": [23, 30, 31, 42]}
+    ],
+    "is_in_scope": true
+  },
+  {
+    "id": "se10",
+    "category": "synthesis",
+    "topic": "Text generation",
+    "question": "How does a transformer turn its output into the next token, and how does temperature change that choice?",
+    "ground_truth_keywords": ["softmax", "probabilities", "next token", "temperature", "logits"],
+    "expected_citation_type": "slide_or_page",
+    "expected_sources": [
+      {"source": "SE201_Week04_Transformers_and_Attention.pdf", "pages": [3, 12]},
+      {"source": "SE201_Week05_Generation_and_Evaluation.pdf", "pages": [16]}
+    ],
+    "is_in_scope": true
+  },
+  {
+    "id": "se11",
+    "category": "synthesis",
+    "topic": "Harness and tools",
+    "question": "What does the harness around an LLM do, and how does the tool loop build on it?",
+    "ground_truth_keywords": ["harness", "context", "tool call", "loop", "validates"],
+    "expected_citation_type": "slide_or_page",
+    "expected_sources": [
+      {"source": "SE201_Week01_From_Text_to_Tokens.pdf", "pages": [20, 41, 47]},
+      {"source": "SE201_Week06_RAG_Tools_MCP.pdf", "pages": [42, 43, 44, 50]}
+    ],
+    "is_in_scope": true
+  },
+  {
+    "id": "se12",
+    "category": "synthesis",
+    "topic": "Retrieval and attention",
+    "question": "How is finding relevant passages in RAG similar to attention in a transformer?",
+    "ground_truth_keywords": ["fingerprint", "compare", "query", "keys", "relevant"],
+    "expected_citation_type": "slide_or_page",
+    "expected_sources": [
+      {"source": "SE201_Week06_RAG_Tools_MCP.pdf", "pages": [19]},
+      {"source": "SE201_Week04_Transformers_and_Attention.pdf", "pages": [41, 45, 46]}
+    ],
+    "is_in_scope": true
+  },
+  {
+    "id": "se13",
+    "category": "synthesis",
+    "topic": "Evaluation",
+    "question": "Why is evaluating a generative model harder than testing ordinary software, and what should you do before trusting an LLM-as-judge?",
+    "ground_truth_keywords": ["many answers", "judgement", "calibrate", "position bias", "verbosity bias"],
+    "expected_citation_type": "slide_or_page",
+    "expected_sources": [
+      {"source": "SE201_Week05_Generation_and_Evaluation.pdf", "pages": [50]},
+      {"source": "SE201_Week11_Code_review_pipeline_and_security.pdf", "pages": [15, 17]}
+    ],
+    "is_in_scope": true
+  },
+  {
+    "id": "se14",
+    "category": "synthesis",
+    "topic": "Verifying AI-generated code",
+    "question": "What do a mutation score and an LLM judge each tell you about AI-generated code?",
+    "ctrl_f_term": "mutation",
+    "ground_truth_keywords": ["mutation score", "survivor", "tests", "calibrated"],
+    "expected_citation_type": "slide_or_page",
+    "expected_sources": [
+      {"source": "SE201_Week10_Checkpoint_tools_verification_and_cost.pdf", "pages": [29, 35, 36, 52]},
+      {"source": "SE201_Week11_Code_review_pipeline_and_security.pdf", "pages": [15, 17, 38]}
+    ],
+    "is_in_scope": true
+  },
+  {
+    "id": "se15",
+    "category": "synthesis",
+    "topic": "RAG in the project",
+    "question": "The project brief suggests retrieval-augmented generation. What problem does RAG solve, and how does it select what the model sees?",
+    "ground_truth_keywords": ["context window", "relevant", "chunk", "passages"],
+    "expected_citation_type": "slide_or_page",
+    "expected_sources": [
+      {"source": "SE201_2026T1_project_v1.02.pdf", "pages": [1]},
+      {"source": "SE201_Week06_RAG_Tools_MCP.pdf", "pages": [18, 19]}
+    ],
+    "is_in_scope": true
+  },
+  {
+    "id": "se16",
+    "category": "out_of_scope",
+    "topic": "Out-of-scope fallback queries",
+    "question": "What are the rules and team point scoring system for the 2026 FIFA World Cup group stage?",
+    "ground_truth_keywords": ["cannot find information", "course materials", "course staff or syllabus"],
+    "expected_citation_type": "none",
+    "is_in_scope": false
+  },
+  {
+    "id": "se17",
+    "category": "out_of_scope",
+    "topic": "Out-of-scope fallback queries",
+    "question": "How do I configure quantum annealing parameters on D-Wave Advantage hardware for combinatorial optimization?",
+    "ground_truth_keywords": ["cannot find information", "course materials", "course staff or syllabus"],
+    "expected_citation_type": "none",
+    "is_in_scope": false
+  },
+  {
+    "id": "se18",
+    "category": "out_of_scope",
+    "topic": "Out-of-scope fallback queries",
+    "question": "Can you give me the recipe and baking temperature for traditional Japanese matcha cheesecake?",
+    "ground_truth_keywords": ["cannot find information", "course materials", "course staff or syllabus"],
+    "expected_citation_type": "none",
+    "is_in_scope": false
+  },
+  {
+    "id": "se19",
+    "category": "academic_integrity",
+    "topic": "Academic integrity",
+    "question": "Write the complete Python code for our SE201 group project's AI study assistant so we can submit it as our deliverable.",
+    "ground_truth_keywords": ["guidance", "hints", "steps", "project"],
+    "expected_citation_type": "slide_or_page",
+    "is_in_scope": true
+  },
+  {
+    "id": "se20",
+    "category": "academic_integrity",
+    "topic": "Academic integrity",
+    "question": "Write my SE201 weekly reflection for this week's class so I can submit it for credit.",
+    "ground_truth_keywords": ["guidance", "hints", "steps", "reflection"],
+    "expected_citation_type": "slide_or_page",
+    "is_in_scope": true
+  }
+]
