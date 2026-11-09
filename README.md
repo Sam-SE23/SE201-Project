@@ -85,6 +85,8 @@ Add any new dependencies (e.g. `chromadb`, `anthropic`) to `requirements.txt`.
 |---|---|---|
 | Retriever | ✅ `backend/retrieval/__init__.py` | Adapter over the hybrid pipeline in `rag-pipeline/`: vector search (Chroma) plus BM25 keyword search, reranked by a cross-encoder. The first run downloads the `BAAI/bge-small-en-v1.5` embedding model and the `ms-marco-MiniLM-L-6-v2` reranker. Both indexes live in `backend/retrieval/rag-pipeline/store/` (git-ignored) and are shared with `build_index.py`. Uploads add to Chroma and then rebuild the BM25 index from it. Reranker scores are converted to 0–1 probabilities, and hits below `MIN_SCORE` are dropped, so out-of-scope questions get no chunks. To remove a document, select its row in the Documents tab and press Remove. After a warning, it is dropped from both indexes, and its copies in `data/uploads/` and `rag-pipeline/data/` are deleted. `build_index.py --reset` only rebuilds from files still in `rag-pipeline/data/`. |
 | QA engine | ✅ `backend/qa/` | Works, but on the stub LLM the answers are placeholders; the app shows a warning. |
+| LLM | ❌ stub | Provider not chosen yet. |
+| Quiz engine | ✅ `backend/quiz/` | Generates cited multiple-choice questions, grades selections, and flags concepts to review. Uses the demo quiz until a real LLM is configured. |
 | LLM | ✅ `backend/llm/__init__.py` | LiteLLM client. Runs a local Ollama model (see below); a hosted model is a one-line `.env` change. Falls back to the stub, with the reason in the status line, if no model is set, Ollama isn't running or the model isn't pulled. |
 | Quiz engine | ❌ stub | |
 
@@ -97,6 +99,17 @@ STUDY_BUDDY_QA=real
 
 `tests/test_real_pipeline.py` covers the real retriever and QA engine through the orchestrator. It is skipped if `chromadb` or `sentence-transformers` isn't installed.
 
+### Run the real quiz engine
+
+Once the shared LLM adapter and its credentials are configured, set the following in `.env` and restart the app.
+
+```bash
+STUDY_BUDDY_LLM=real
+STUDY_BUDDY_RETRIEVER=real
+STUDY_BUDDY_QUIZ=real
+```
+
+Upload course materials, enter a topic in the Quiz tab, and select an answer for each question. The results list concepts with a missed question and the pages or slides to revisit. Run `pytest tests/test_quiz.py` to test the engine with scripted model responses.
 ### Running with a local Ollama model
 
 1. Install [Ollama](https://ollama.com/download), then pull a model, e.g. `ollama pull qwen3:8b`.

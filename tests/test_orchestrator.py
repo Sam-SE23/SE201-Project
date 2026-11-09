@@ -1,6 +1,6 @@
 import json
 
-from backend import config, registry
+from backend import config, qa, registry
 from backend.interfaces import QAEngine, QuizEngine, Retriever, LLMClient
 from backend.stubs import FakeLLM, FakeQA, FakeQuiz, FakeRetriever
 
@@ -76,12 +76,12 @@ def test_ai_calls_are_logged(orch, sample_pdf):
 
 
 def test_registry_falls_back_to_stub_when_real_module_missing(monkeypatch):
-    # backend.quiz has no create_quiz_engine yet, so loading it fails
-    monkeypatch.setitem(config.BACKENDS, "quiz", "real")
+    monkeypatch.delattr(qa, "create_qa_engine")
+    monkeypatch.setitem(config.BACKENDS, "qa", "real")
     components = registry.build()
-    assert isinstance(components.quiz, FakeQuiz)
-    assert components.status["quiz"] == "stub"
-    assert any("quiz" in w for w in components.warnings)
+    assert isinstance(components.qa, FakeQA)
+    assert components.status["qa"] == "stub"
+    assert any("create_qa_engine" in w for w in components.warnings)
 
 
 def test_registry_warns_when_real_qa_uses_stub_llm(monkeypatch):

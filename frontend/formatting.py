@@ -80,10 +80,7 @@ def quiz_progress(session: QuizSession) -> str:
 
 
 def quiz_question(q: QuizQuestion) -> str:
-    text = f"### {q.question}"
-    if q.choices:
-        text += "\n\n" + "\n".join(f"- {c}" for c in q.choices)
-    return text
+    return f"### {q.question}"
 
 
 def quiz_feedback(grade: Grade, q: QuizQuestion) -> str:
