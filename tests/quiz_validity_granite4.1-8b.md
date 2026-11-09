@@ -1,5 +1,7 @@
 # Quiz validity spot check: `ollama_chat/granite4.1:8b`
 
+> **Superseded for the demo model.** This check ran on granite, before the local model was set to temperature 0. The demo uses Claude Haiku, whose check is in `tests/quiz_validity_claude-haiku-5-5.md` (10/10). This file is kept as the granite comparison.
+
 - **Target (from the proposal):** ≥90% validity for a set of 10 generated quiz questions, checked by hand.
 - **Date:** 9 Nov 2026.
 - **Setup:** the app's real quiz engine (`backend/quiz/`, `GroundedQuiz`) with granite, over the 11 benchmark PDFs in `data/benchmark_corpus/` (the 10 lectures named in `tests/eval_benchmark_se201.json` plus `SE201_2026T1_project_v1.02.pdf`).

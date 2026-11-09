@@ -167,3 +167,17 @@ Checked that the key was present without displaying it, then sent one test reque
 
 ### What I kept or changed
 I kept the integrity-check fix and added a test. It only recognises more ways of phrasing a refusal and doesn't loosen the full-code check. The review file now covers both models and is renamed `tests/eval_review.md`. Which model the demo uses is my decision: Haiku meets the targets, while granite is free, offline and keeps the lecture material private.
+
+## 2026-11-09 · Quiz validity on Claude Haiku and a quiz round in the app
+- **Tool (model):** Claude Code (Claude Opus 5.5)
+- **Files:** tests/quiz_validity_claude-haiku-5-5.md, tests/quiz_validity_granite4.1-8b.md, tests/eval_review.md
+- **Outcome:** Changed
+
+### What I asked for
+The 10-question quiz validity check on the demo model (Claude Haiku), and confirmation that a full quiz round works in the app with Haiku.
+
+### How I checked it
+Re-ran the same generation script on Haiku: it proposed 15 questions in 8 calls and the engine's checks kept 10 (67%), against granite's 52 proposed in 27 calls with 10 kept (19%). Each question was checked against the text of its cited page, and all 10 passed (granite: 8/10), meeting the ≥90% target pending my sign-off. Ran a quiz round through the orchestrator with the app's own components and a temporary index. 5 questions were generated, the one right and four wrong answers were graded correctly, the summary showed 1/5 with the four missed topics and their source pages, and every step was logged under the Haiku model. An earlier round asked for 5 but got 3, because the engine drops questions that fail its checks and doesn't retry. Launched the GUI and confirmed all four components are real and the Quiz tab controls are wired.
+
+### What I kept or changed
+No code changes. The granite quiz sheet is kept as a comparison, marked as run before temperature 0. A quiz can come back with fewer questions than asked for, which the app already explains to the user.

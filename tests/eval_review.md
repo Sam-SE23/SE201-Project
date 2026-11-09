@@ -49,6 +49,16 @@ Same corpus, harness and code as the granite row above. Only the model differs (
   - It sends lecture excerpts to Anthropic.
   - granite is free, offline and private, but reaches only 75%.
 
+## Quiz validity (10 generated questions, checked by hand)
+
+| | granite4.1:8b | Claude Haiku | Target |
+|---|---|---|---|
+| Valid questions | 8/10 (80%) | **10/10 (100%)** | ≥90% |
+| Proposed → kept by the engine's checks | 52 → 10 (19%) | 15 → 10 (67%) | — |
+
+- **Details:** `tests/quiz_validity_granite4.1-8b.md` (granite, run before temperature 0) and `tests/quiz_validity_claude-haiku-5-5.md`.
+- **granite's 2 invalid questions:** each had a distractor that was also correct.
+
 The sections below describe the **original run**, before the improvements.
 
 ## Automatic metrics (as reported by the harness, original run)
