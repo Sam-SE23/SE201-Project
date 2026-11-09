@@ -125,3 +125,45 @@ Every in-scope question lists the pages its answer is on. A script confirmed eac
 
 ### What I kept or changed
 Kept Guru's metrics and judge. Accuracy now also requires citing the page the answer is on, when the question names it. Ctrl+F searches the question's most specific word instead of a ground-truth answer word, which had handed the baseline the answer; this lowered the mock baseline from 95% to 60%. Four questions name their own Ctrl+F term (e.g. "XOR", "A2A"). A refusal is now compliant for academic-integrity questions, and a fenced code block of 8 or more lines counts as a full solution. Questions on four lecture files that aren't on my laptop were left out. The lecture PDFs stay out of the repo.
+
+## 2026-11-09 · Real benchmark run and quiz validity check
+- **Tool (model):** Claude Code (Claude Opus 5.5)
+- **Files:** tests/eval_results_ollama-chat-granite4-1-8b.json, tests/eval_review.md, tests/quiz_validity_granite4.1-8b.md
+- **Outcome:** Changed
+
+### What I asked for
+Run the real benchmark against the SE201 materials, do the 10-question quiz validity check from the proposal, and turn on the real quiz. I chose to index only the benchmark's own 11 files, provided the project spec PDF, and tested granite only.
+
+### How I checked it
+Ran `eval_runner.py --real` on `granite4.1:8b`. The harness reported 45% accuracy and 58.8% hallucination, which didn't match 94% citation presence and 86.7% correct-page citations, so the failing answers were read one by one. Re-scoring the saved answers with the harness's own judge showed that 2 failures came from it checking faithfulness against shortened display excerpts rather than the full chunks the model saw. One more was a page label that was too narrow: the date is on both p.1 and p.2. The rest were real: on synthesis questions, granite cites one lecture and pads the answer with general knowledge. Hand-checked total: 13/20. For the quiz, granite proposed 52 questions and the engine's checks kept 10. I read each against its cited page, and 8/10 are valid. Two have a distractor that is also correct.
+
+### What I kept or changed
+I reported the numbers as they are rather than tuning anything to reach the targets. Neither target is met (accuracy 65% by hand against ≥85%, quiz 80% against ≥90%), and the review files explain why. Two code issues are noted but not yet fixed: the harness's excerpt-based faithfulness check, and the LLM client reporting a timeout as "Can't reach Ollama".
+
+## 2026-11-09 · Raising benchmark accuracy (steps 1–4)
+- **Tool (model):** Claude Code (Claude Opus 5.5)
+- **Files:** tests/eval_runner.py, tests/eval_benchmark_se201.json, backend/llm/__init__.py, backend/qa/__init__.py, backend/qa/qa_prompts.py, tests/test_llm.py, tests/eval_results_ollama-chat-granite4-1-8b.json, tests/eval_review.md
+- **Outcome:** Changed
+
+### What I asked for
+A plan to raise answer accuracy above 85%, then four of its steps: fix the harness measurement, retrieve more passages, tighten the system prompt, and use temperature 0 on the local model. Switching to a stronger model was left for later.
+
+### How I checked it
+Re-ran the real benchmark after each step and recorded the change. Fixing the measurement took accuracy from 45% to 70%, but two runs at temperature 0 failed the same 8 questions (60%), which showed the 70% was a lucky draw. Retrieving 8 passages added one question (65%), and the stricter prompt brought it to 75%, with hallucination down from 58.8% to 23.5% and answers about a third faster. Read the five remaining failures: one retrieval miss, three where granite still adds material that isn't in the sources, and one cited outside the expected pages. Ran the full suite (86 passing), and Guru's mock-mode results are unchanged.
+
+### What I kept or changed
+I kept all four steps. Rather than doing step 3 before step 4 as planned, I switched to temperature 0 first, so each later change could be measured without run-to-run noise. I didn't lower the faithfulness threshold or rewrite questions; the only benchmark edit adds a page the answer really is on. The 85% target isn't reached with granite. Steps 2 and 3 were tuned on the same 20 questions, which the review file notes. The quiz check was done before the temperature change.
+
+## 2026-11-09 · Claude Haiku comparison
+- **Tool (model):** Claude Code (Claude Opus 5.5)
+- **Files:** tests/eval_results_anthropic-claude-haiku-5-5.json, tests/eval_runner.py, tests/test_eval_runner.py, tests/eval_review.md
+- **Outcome:** Changed
+
+### What I asked for
+Run the same benchmark on Claude Haiku after I added my API key to `.env`. I set the app's model to Haiku myself.
+
+### How I checked it
+Checked that the key was present without displaying it, then sent one test request. On the first run Haiku reached 90% accuracy and 5.9% hallucination, but academic integrity was 50%. Reading that answer showed a correct refusal ("I can't write your weekly reflection, since it's graded…"), which the harness rejected because it only recognised "cannot". After the fix, re-judging the saved answer passed it, and a fresh run gave 90% accuracy, 5.9% hallucination, 100% citation presence, 100% out-of-scope fallback and 100% academic integrity. All targets were met. The one failure both models share (se04) is a retrieval miss.
+
+### What I kept or changed
+I kept the integrity-check fix and added a test. It only recognises more ways of phrasing a refusal and doesn't loosen the full-code check. The review file now covers both models and is renamed `tests/eval_review.md`. Which model the demo uses is my decision: Haiku meets the targets, while granite is free, offline and keeps the lecture material private.

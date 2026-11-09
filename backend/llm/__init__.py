@@ -71,9 +71,10 @@ class LiteLLMClient:
 
         kwargs = {}
         if _is_ollama(self.model_name):
-            # Ollama-only settings. No temperature or other sampling parameters,
-            # so the same call also works for hosted models that reject them.
-            kwargs = {"api_base": self.api_base, "num_ctx": self.num_ctx}
+            # Ollama-only settings. Temperature 0 makes the local model repeatable
+            # and keeps it from embellishing beyond the sources. Hosted models get
+            # no sampling parameters, since some reject them.
+            kwargs = {"api_base": self.api_base, "num_ctx": self.num_ctx, "temperature": 0}
         elif self._api_key:
             # One provider-neutral key; without it LiteLLM reads the provider's own variable.
             kwargs = {"api_key": self._api_key}

@@ -1,0 +1,688 @@
+{
+  "summary": {
+    "model": "anthropic/claude-haiku-5-5",
+    "run_at": "2026-11-09T23:02:32",
+    "corpus_files": [
+      "SE201_2026T1_project_v1.02.pdf",
+      "SE201_Week01_From_Text_to_Tokens.pdf",
+      "SE201_Week02_Simple_Neural_Networks.pdf",
+      "SE201_Week03_Training_Neural_Networks.pdf",
+      "SE201_Week04_Transformers_and_Attention.pdf",
+      "SE201_Week05_Generation_and_Evaluation.pdf",
+      "SE201_Week06_RAG_Tools_MCP.pdf",
+      "SE201_Week07_MCP_A2A.pdf",
+      "SE201_Week09_LangChain_LangGraph.pdf",
+      "SE201_Week10_Checkpoint_tools_verification_and_cost.pdf",
+      "SE201_Week11_Code_review_pipeline_and_security.pdf"
+    ],
+    "avg_seconds_per_question": 4.52,
+    "total_questions": 20,
+    "in_scope_questions": 17,
+    "out_of_scope_questions": 3,
+    "academic_integrity_questions": 2,
+    "metrics": {
+      "overall_accuracy_pct": 90.0,
+      "hallucination_rate_pct": 5.88,
+      "citation_presence_rate_pct": 100.0,
+      "fallback_accuracy_pct": 100.0,
+      "academic_integrity_compliance_pct": 100.0,
+      "avg_context_precision_pct": 63.75,
+      "avg_faithfulness_ratio_pct": 91.28,
+      "correct_source_citation_pct": 93.33
+    },
+    "failure_taxonomy": {
+      "Retrieval Miss": 1,
+      "Attention Drift": 1,
+      "False-Negative Fallback": 0,
+      "Citation Format Error": 0,
+      "Wrong Source Cited": 0,
+      "Error": 0
+    },
+    "baseline_comparison": {
+      "ctrl_f_search_method": "most specific word of the question",
+      "ctrl_f_accuracy_pct": 80.0,
+      "ctrl_f_citation_pct": 100.0,
+      "ctrl_f_fallback_pct": 33.33,
+      "ctrl_f_whole_question_zero_hits_pct": 100.0
+    },
+    "target_benchmarks": {
+      "overall_accuracy_pct": ">= 85%",
+      "hallucination_rate_pct": "< 10%",
+      "citation_presence_rate_pct": ">= 90%",
+      "fallback_accuracy_pct": "100%",
+      "academic_integrity_compliance_pct": "100%",
+      "avg_context_precision_pct": ">= 75%",
+      "avg_faithfulness_ratio_pct": ">= 90%"
+    }
+  },
+  "test_results": [
+    {
+      "id": "se01",
+      "category": "explicit_fact",
+      "question": "What is a large language model (LLM), according to the course material?",
+      "response": "\ud83d\udfe1 Grounding Confidence: 80% [Grounded in SE201_Week01_From_Text_to_Tokens.pdf]\n\nA large language model (LLM) is:\n\n- A combination of deep learning and NLP [SE201_Week01_From_Text_to_Tokens.pdf, p.25]\n- Often built on a specific neural network design, the transformer [SE201_Week01_From_Text_to_Tokens.pdf, p.25]\n- Trained on very large text and code datasets [SE201_Week01_From_Text_to_Tokens.pdf, p.25]\n\nThe course also notes that the distinction between an LLM and a Foundation Model (FM) is sometimes blurry, and that FMs are trained on very large datasets that can include audio, images, and video [SE201_Week01_From_Text_to_Tokens.pdf, p.25].",
+      "citations_extracted": [
+        "SE201_Week01_From_Text_to_Tokens.pdf, p.25"
+      ],
+      "grounded": true,
+      "passed": true,
+      "cited_expected_page": true,
+      "seconds": 4.06,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "context_precision": 12.5,
+        "faithfulness_ratio": 100.0,
+        "failure_category": null,
+        "overall_pass": true,
+        "matched_keywords": [
+          "deep learning",
+          "natural language processing",
+          "transformer",
+          "large text"
+        ],
+        "reason": "Passed evaluation criteria"
+      },
+      "ctrl_f_term": "language",
+      "ctrl_f_hits_count": 36,
+      "ctrl_f_phrase_hits": 0
+    },
+    {
+      "id": "se02",
+      "category": "explicit_fact",
+      "question": "Why can't a single neuron represent the XOR function?",
+      "response": "\ud83d\udfe1 Grounding Confidence: 80% [Grounded in SE201_Week02_Simple_Neural_Networks.pdf]\n\n- A single neuron's decision boundary is a straight line [SE201_Week02_Simple_Neural_Networks.pdf, p.59].\n- Separable data has a line that puts every class-1 point on one side and every class-0 point on the other. AND and OR over two binary inputs are separable, but XOR is not [SE201_Week02_Simple_Neural_Networks.pdf, p.35].\n- Because XOR is not linearly separable, a single neuron cannot represent it, or even very simple functions [SE201_Week02_Simple_Neural_Networks.pdf, p.35].\n- Hidden layers can solve XOR: each hidden neuron draws one line, and the output neuron combines the two half-planes [SE201_Week02_Simple_Neural_Networks.pdf, p.53].",
+      "citations_extracted": [
+        "SE201_Week02_Simple_Neural_Networks.pdf, p.59",
+        "SE201_Week02_Simple_Neural_Networks.pdf, p.35",
+        "SE201_Week02_Simple_Neural_Networks.pdf, p.53"
+      ],
+      "grounded": true,
+      "passed": true,
+      "cited_expected_page": true,
+      "seconds": 4.18,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "context_precision": 37.5,
+        "faithfulness_ratio": 100.0,
+        "failure_category": null,
+        "overall_pass": true,
+        "matched_keywords": [
+          "linearly separable",
+          "single neuron",
+          "hidden layer",
+          "line"
+        ],
+        "reason": "Passed evaluation criteria"
+      },
+      "ctrl_f_term": "XOR",
+      "ctrl_f_hits_count": 9,
+      "ctrl_f_phrase_hits": 0
+    },
+    {
+      "id": "se03",
+      "category": "explicit_fact",
+      "question": "What does back-propagation compute when training a neural network?",
+      "response": "\ud83d\udfe1 Grounding Confidence: 80% [Grounded in SE201_Week03_Training_Neural_Networks.pdf]\n\n- Back-propagation computes the gradient, or slope, for all weights in the network [SE201_Week03_Training_Neural_Networks.pdf, p.32].\n- It produces every slope in one backward sweep [SE201_Week03_Training_Neural_Networks.pdf, p.42].\n- It computes the same slopes as measuring by perturbation, but far more cheaply [SE201_Week03_Training_Neural_Networks.pdf, p.30].\n- It works as blame assignment: each weight's share of responsibility for the final error is computed [SE201_Week03_Training_Neural_Networks.pdf, p.31].\n- The slope of a weight says which way to move it, and by how much [SE201_Week03_Training_Neural_Networks.pdf, p.42].",
+      "citations_extracted": [
+        "SE201_Week03_Training_Neural_Networks.pdf, p.42",
+        "SE201_Week03_Training_Neural_Networks.pdf, p.30",
+        "SE201_Week03_Training_Neural_Networks.pdf, p.31"
+      ],
+      "grounded": true,
+      "passed": true,
+      "cited_expected_page": true,
+      "seconds": 5.35,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "context_precision": 37.5,
+        "faithfulness_ratio": 100.0,
+        "failure_category": null,
+        "overall_pass": true,
+        "matched_keywords": [
+          "slope",
+          "gradient",
+          "weight"
+        ],
+        "reason": "Passed evaluation criteria"
+      },
+      "ctrl_f_term": "back-propagation",
+      "ctrl_f_hits_count": 11,
+      "ctrl_f_phrase_hits": 0
+    },
+    {
+      "id": "se04",
+      "category": "explicit_fact",
+      "question": "What does the temperature setting do during text generation?",
+      "response": "\ud83d\udfe1 Grounding Confidence: 70% [Grounded in SE201_Week05_Generation_and_Evaluation.pdf]\n\nTemperature controls how random the next-token selection is, and higher values produce more random output:\n\n- At **temperature 0**, generation is greedy: conservative, repeatable, and boring [SE201_Week05_Generation_and_Evaluation.pdf, p.23].\n- At **temperature 0.6**, output is random but somewhat greedy, and this is the default for the model in the experiment [SE201_Week05_Generation_and_Evaluation.pdf, p.23].\n- At **temperature 1**, output is more random; this is the default used in training [SE201_Week05_Generation_and_Evaluation.pdf, p.23].\n- At **temperature 3**, the slides describe the output as hallucinating [SE201_Week05_Generation_and_Evaluation.pdf, p.23].\n\nThe slide also lists temperature 6 and top_p 1.0 as further settings to try, but it does not describe their effects [SE201_Week05_Generation_and_Evaluation.pdf, p.23].",
+      "citations_extracted": [
+        "SE201_Week05_Generation_and_Evaluation.pdf, p.23"
+      ],
+      "grounded": true,
+      "passed": false,
+      "cited_expected_page": false,
+      "seconds": 3.91,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 0,
+        "citation_validity": 1,
+        "context_precision": 100.0,
+        "faithfulness_ratio": 75.0,
+        "failure_category": "Retrieval Miss",
+        "overall_pass": false,
+        "matched_keywords": [],
+        "reason": "Failed: Retrieval Miss"
+      },
+      "ctrl_f_term": "temperature",
+      "ctrl_f_hits_count": 15,
+      "ctrl_f_phrase_hits": 0
+    },
+    {
+      "id": "se05",
+      "category": "explicit_fact",
+      "question": "What does the A2A protocol standardise between agents?",
+      "response": "\ud83d\udfe2 Grounding Confidence: 90% [Grounded in SE201_Week07_MCP_A2A.pdf]\n\nA2A standardises the following between agents:\n\n- **Roles:** a client agent (the one asking) and a remote agent (the one doing the work). An agent can be both at once. [SE201_Week07_MCP_A2A.pdf, p.27]\n- **Discovery:** the Agent Card, which lists name, description, supported interfaces, skills, capabilities, and security schemes. [SE201_Week07_MCP_A2A.pdf, p.27]\n- **Task:** a unit of work with an id, a status, the messages exchanged, and the artefacts it produced. [SE201_Week07_MCP_A2A.pdf, p.27]\n- **Message:** one turn, made of parts (text, file, or structured data). [SE201_Week07_MCP_A2A.pdf, p.27]\n- **Transport:** JSON-RPC 2.0 over HTTPS (also gRPC, HTTP+JSON), with the methods SendMessage, GetTask, CancelTask, and SubscribeToTask. [SE201_Week07_MCP_A2A.pdf, p.27]\n\nAgents are opaque: they exchange messages and artefacts, not thoughts, plans, or tool implementations. [SE201_Week07_MCP_A2A.pdf, p.27]",
+      "citations_extracted": [
+        "SE201_Week07_MCP_A2A.pdf, p.27"
+      ],
+      "grounded": true,
+      "passed": true,
+      "cited_expected_page": true,
+      "seconds": 4.69,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "context_precision": 12.5,
+        "faithfulness_ratio": 100.0,
+        "failure_category": null,
+        "overall_pass": true,
+        "matched_keywords": [
+          "agent card",
+          "client agent",
+          "remote agent",
+          "discovery",
+          "task"
+        ],
+        "reason": "Passed evaluation criteria"
+      },
+      "ctrl_f_term": "A2A",
+      "ctrl_f_hits_count": 21,
+      "ctrl_f_phrase_hits": 0
+    },
+    {
+      "id": "se06",
+      "category": "explicit_fact",
+      "question": "What are LangChain and LangGraph, and how do they relate?",
+      "response": "\ud83d\udfe2 Grounding Confidence: 100% [Grounded in SE201_Week09_LangChain_LangGraph.pdf]\n\n**LangChain** provides the model interface, components, and a ready-made agent [SE201_Week09_LangChain_LangGraph.pdf, p.6]. It helps simplify repeated design patterns by abstracting model-specific interfaces [SE201_Week09_LangChain_LangGraph.pdf, p.2].\n\n**LangGraph** is the runtime that runs and controls the steps [SE201_Week09_LangChain_LangGraph.pdf, p.6].\n\n**How they relate:** Since version 1.0, LangChain agents run on LangGraph [SE201_Week09_LangChain_LangGraph.pdf, p.6]. LangChain supplies the higher-level building blocks, and LangGraph executes and controls them.",
+      "citations_extracted": [
+        "SE201_Week09_LangChain_LangGraph.pdf, p.6",
+        "SE201_Week09_LangChain_LangGraph.pdf, p.2"
+      ],
+      "grounded": true,
+      "passed": true,
+      "cited_expected_page": true,
+      "seconds": 3.55,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "context_precision": 40.0,
+        "faithfulness_ratio": 75.0,
+        "failure_category": null,
+        "overall_pass": true,
+        "matched_keywords": [
+          "model interface",
+          "runtime",
+          "agent",
+          "steps"
+        ],
+        "reason": "Passed evaluation criteria"
+      },
+      "ctrl_f_term": "LangChain",
+      "ctrl_f_hits_count": 8,
+      "ctrl_f_phrase_hits": 0
+    },
+    {
+      "id": "se07",
+      "category": "explicit_fact",
+      "question": "When is the project checkpoint due?",
+      "response": "\ud83d\udfe2 Grounding Confidence: 90% [Grounded in SE201_2026T1_project_v1.02.pdf]\n\nThe project checkpoint is due **18 October (Sunday) at 23:59**. [SE201_2026T1_project_v1.02.pdf, p.1]\n\nSubmission is via eLearn under Assignments / Project Checkpoint. [SE201_2026T1_project_v1.02.pdf, p.2]",
+      "citations_extracted": [
+        "SE201_2026T1_project_v1.02.pdf, p.1",
+        "SE201_2026T1_project_v1.02.pdf, p.2"
+      ],
+      "grounded": true,
+      "passed": true,
+      "cited_expected_page": true,
+      "seconds": 2.33,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "context_precision": 50.0,
+        "faithfulness_ratio": 100.0,
+        "failure_category": null,
+        "overall_pass": true,
+        "matched_keywords": [
+          "18 October",
+          "23:59",
+          "Sunday"
+        ],
+        "reason": "Passed evaluation criteria"
+      },
+      "ctrl_f_term": "checkpoint",
+      "ctrl_f_hits_count": 23,
+      "ctrl_f_phrase_hits": 0
+    },
+    {
+      "id": "se08",
+      "category": "explicit_fact",
+      "question": "How much time does each team get for the final presentation, including Q&A?",
+      "response": "\ud83d\udfe2 Grounding Confidence: 90% [Grounded in SE201_2026T1_project_v1.02.pdf]\n\nEach team is given 20 minutes in total, consisting of 15 minutes for the presentation and 5 minutes for Q&A. The presentations take place in class during week 13. [SE201_2026T1_project_v1.02.pdf, p.3]",
+      "citations_extracted": [
+        "SE201_2026T1_project_v1.02.pdf, p.3"
+      ],
+      "grounded": true,
+      "passed": true,
+      "cited_expected_page": true,
+      "seconds": 2.04,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "context_precision": 100.0,
+        "faithfulness_ratio": 100.0,
+        "failure_category": null,
+        "overall_pass": true,
+        "matched_keywords": [
+          "20 minutes",
+          "15 minutes",
+          "5 minutes",
+          "Q&A"
+        ],
+        "reason": "Passed evaluation criteria"
+      },
+      "ctrl_f_term": "presentation",
+      "ctrl_f_hits_count": 25,
+      "ctrl_f_phrase_hits": 0
+    },
+    {
+      "id": "se09",
+      "category": "synthesis",
+      "question": "How is a single neuron's output computed, and how are its weights learned during training?",
+      "response": "\ud83d\udfe2 Grounding Confidence: 90% [Grounded in SE201_Week02_Simple_Neural_Networks.pdf]\n\n**How a neuron's output is computed**\n\n- A neuron takes a weighted sum of its inputs plus a bias, then passes the result through an activation [SE201_Week02_Simple_Neural_Networks.pdf, p.59].\n- The weighted sum has one weight per input, and the bias is added to it [SE201_Week02_Simple_Neural_Networks.pdf, p.12; p.14].\n- The weighted sum, called the pre-activation z, summarises the entire input for that neuron [SE201_Week02_Simple_Neural_Networks.pdf, p.12].\n- With a sigmoid activation, the output can be read as a probability: p > 0.5 gives class 1 [SE201_Week02_Simple_Neural_Networks.pdf, p.25].\n\n**How weights are learned**\n\n- Weights and bias are learned in training, while inputs come from the data [SE201_Week02_Simple_Neural_Networks.pdf, p.59]. Training is the search for good values of w and b [SE201_Week02_Simple_Neural_Networks.pdf, p.18].\n- One method shown is perturbation: change one weight by a small amount, run a forward pass, and divide the change in loss by the change in weight [SE201_Week03_Training_Neural_Networks.pdf, p.20].\n- A training step averages the blame over the batch, which reduces the effect of outliers and prevents overfitting to single examples [SE201_Week03_Training_Neural_Networks.pdf, p.34].\n\nThe course materials do not give the full weight-update rule. The Week 2 slides say that learning is covered next week [SE201_Week02_Simple_Neural_Networks.pdf, p.59].",
+      "citations_extracted": [
+        "SE201_Week02_Simple_Neural_Networks.pdf, p.59",
+        "SE201_Week02_Simple_Neural_Networks.pdf, p.12",
+        "SE201_Week02_Simple_Neural_Networks.pdf, p.25",
+        "SE201_Week02_Simple_Neural_Networks.pdf, p.18",
+        "SE201_Week03_Training_Neural_Networks.pdf, p.20",
+        "SE201_Week03_Training_Neural_Networks.pdf, p.34"
+      ],
+      "grounded": true,
+      "passed": true,
+      "cited_expected_page": true,
+      "seconds": 8.38,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "context_precision": 87.5,
+        "faithfulness_ratio": 88.89,
+        "failure_category": null,
+        "overall_pass": true,
+        "matched_keywords": [
+          "weighted sum",
+          "bias",
+          "activation"
+        ],
+        "reason": "Passed evaluation criteria"
+      },
+      "ctrl_f_term": "neuron",
+      "ctrl_f_hits_count": 63,
+      "ctrl_f_phrase_hits": 0
+    },
+    {
+      "id": "se10",
+      "category": "synthesis",
+      "question": "How does a transformer turn its output into the next token, and how does temperature change that choice?",
+      "response": "\ud83d\udfe1 Grounding Confidence: 80% [Grounded in SE201_Week04_Transformers_and_Attention.pdf]\n\n**Producing the next token:** The LLM uses softmax to get probabilities over more than two classes, and this is how it predicts the next token [SE201_Week04_Transformers_and_Attention.pdf, p.3].\n\n**How temperature changes the choice:** The course demonstrates these effects:\n- **Temperature 0** (greedy): conservative, repeatable, \"boring\" [SE201_Week05_Generation_and_Evaluation.pdf, p.23].\n- **Temperature 0.6:** random but somewhat greedy; the default for this model [SE201_Week05_Generation_and_Evaluation.pdf, p.23].\n- **Temperature 1:** the default used in training; even more random [SE201_Week05_Generation_and_Evaluation.pdf, p.23].\n- **Temperature 3:** described as hallucinating [SE201_Week05_Generation_and_Evaluation.pdf, p.23].\n\nTemperature also affects tool calls: at temperature 0, the same question gives the same call [SE201_Week06_RAG_Tools_MCP.pdf, p.46].\n\nThe provided materials do not explain how temperature mathematically changes the softmax probabilities, nor what temperature 6 or `top_p` do.",
+      "citations_extracted": [
+        "SE201_Week04_Transformers_and_Attention.pdf, p.3",
+        "SE201_Week05_Generation_and_Evaluation.pdf, p.23",
+        "SE201_Week06_RAG_Tools_MCP.pdf, p.46"
+      ],
+      "grounded": true,
+      "passed": true,
+      "cited_expected_page": true,
+      "seconds": 6.13,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "context_precision": 60.0,
+        "faithfulness_ratio": 100.0,
+        "failure_category": null,
+        "overall_pass": true,
+        "matched_keywords": [
+          "softmax",
+          "probabilities",
+          "next token",
+          "temperature"
+        ],
+        "reason": "Passed evaluation criteria"
+      },
+      "ctrl_f_term": "transformer",
+      "ctrl_f_hits_count": 18,
+      "ctrl_f_phrase_hits": 0
+    },
+    {
+      "id": "se11",
+      "category": "synthesis",
+      "question": "What does the harness around an LLM do, and how does the tool loop build on it?",
+      "response": "\ud83d\udfe1 Grounding Confidence: 80% [Grounded in SE201_Week01_From_Text_to_Tokens.pdf]\n\nThe harness wraps the LLM. It manages context (user input, chat history, retrieved documents, prior tool results), translates input and output through tokenisation, and validates both for correctness and security/policy/guardrails [SE201_Week01_From_Text_to_Tokens.pdf, p.41]. It also runs the model in a loop when necessary and executes calls to tools, such as fetching a document or web page [SE201_Week01_From_Text_to_Tokens.pdf, p.41].\n\nThe model itself does not learn. Its weights are frozen, and only the context changes [SE201_Week01_From_Text_to_Tokens.pdf, p.73]. The harness therefore carries the loop forward by feeding each tool result back into the context.\n\nEach tool was originally executed in the same Python process as the loop, which does not scale. MCP provides one interface between the harness and the tool [SE201_Week07_MCP_A2A.pdf, p.10].\n\nFor longer-running delegated work, the loop changes shape: the model asks for work, the harness waits, and the result arrives later as an artefact [SE201_Week07_MCP_A2A.pdf, p.26].",
+      "citations_extracted": [
+        "SE201_Week01_From_Text_to_Tokens.pdf, p.41",
+        "SE201_Week01_From_Text_to_Tokens.pdf, p.73",
+        "SE201_Week07_MCP_A2A.pdf, p.10",
+        "SE201_Week07_MCP_A2A.pdf, p.26"
+      ],
+      "grounded": true,
+      "passed": true,
+      "cited_expected_page": true,
+      "seconds": 6.6,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "context_precision": 50.0,
+        "faithfulness_ratio": 100.0,
+        "failure_category": null,
+        "overall_pass": true,
+        "matched_keywords": [
+          "harness",
+          "context",
+          "tool call",
+          "loop",
+          "validates"
+        ],
+        "reason": "Passed evaluation criteria"
+      },
+      "ctrl_f_term": "harness",
+      "ctrl_f_hits_count": 59,
+      "ctrl_f_phrase_hits": 0
+    },
+    {
+      "id": "se12",
+      "category": "synthesis",
+      "question": "How is finding relevant passages in RAG similar to attention in a transformer?",
+      "response": "\ud83d\udfe2 Grounding Confidence: 90% [Grounded in SE201_Week06_RAG_Tools_MCP.pdf]\n\nIn RAG, the content and the original prompt are both fingerprinted, and the fingerprints are compared to find relevant passages [SE201_Week06_RAG_Tools_MCP.pdf, p.19]. The slide describes this matching step as \"similar to how attention works\" [SE201_Week06_RAG_Tools_MCP.pdf, p.19].\n\nOnly the passages that match are then inserted into the prompt [SE201_Week06_RAG_Tools_MCP.pdf, p.19].\n\nThe course materials provided here do not explain how transformer attention works internally, so I cannot detail the specific parallels beyond this comparison. Please consult the course staff or syllabus for that.",
+      "citations_extracted": [
+        "SE201_Week06_RAG_Tools_MCP.pdf, p.19"
+      ],
+      "grounded": true,
+      "passed": false,
+      "cited_expected_page": true,
+      "seconds": 4.59,
+      "judge_evaluation": {
+        "faithfulness": 0,
+        "completeness": 1,
+        "citation_validity": 1,
+        "context_precision": 100.0,
+        "faithfulness_ratio": 50.0,
+        "failure_category": "Attention Drift",
+        "overall_pass": false,
+        "matched_keywords": [
+          "fingerprint",
+          "compare",
+          "relevant"
+        ],
+        "reason": "Failed: Attention Drift"
+      },
+      "ctrl_f_term": "transformer",
+      "ctrl_f_hits_count": 18,
+      "ctrl_f_phrase_hits": 0
+    },
+    {
+      "id": "se13",
+      "category": "synthesis",
+      "question": "Why is evaluating a generative model harder than testing ordinary software, and what should you do before trusting an LLM-as-judge?",
+      "response": "\ud83d\udfe1 Grounding Confidence: 80% [Grounded in SE201_Week05_Generation_and_Evaluation.pdf]\n\n**Why generative models are harder to evaluate:** Ordinary software usually has one correct answer, but a generative model can produce many equally good answers, and the input space is unbounded [SE201_Week05_Generation_and_Evaluation.pdf, p.50]. Quality is often a judgement, and you can't prove a model is correct, only measure whether it beats an alternative on cases you chose [SE201_Week05_Generation_and_Evaluation.pdf, p.50]. Causes are also not traceable: you can't point to the weights that caused bad behavior and fix them [SE201_Week05_Generation_and_Evaluation.pdf, p.50].\n\n**Before trusting an LLM-as-judge:**\n- Calibrate it on cases with known answers before using it on unknown ones [SE201_Week11_Code_review_pipeline_and_security.pdf, p.15].\n- Show it both orders. A consistent letter choice indicates position bias, and preferring the buggy answer in either order indicates verbosity bias [SE201_Week11_Code_review_pipeline_and_security.pdf, p.15].\n- Use it only where no mechanical check exists, and ask narrow questions [SE201_Week11_Code_review_pipeline_and_security.pdf, p.15].\n- Keep the rubric and change the model [SE201_Week11_Code_review_pipeline_and_security.pdf, p.15].",
+      "citations_extracted": [
+        "SE201_Week05_Generation_and_Evaluation.pdf, p.50",
+        "SE201_Week11_Code_review_pipeline_and_security.pdf, p.15"
+      ],
+      "grounded": true,
+      "passed": true,
+      "cited_expected_page": true,
+      "seconds": 4.32,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "context_precision": 25.0,
+        "faithfulness_ratio": 100.0,
+        "failure_category": null,
+        "overall_pass": true,
+        "matched_keywords": [
+          "many answers",
+          "judgement",
+          "calibrate",
+          "position bias",
+          "verbosity bias"
+        ],
+        "reason": "Passed evaluation criteria"
+      },
+      "ctrl_f_term": "LLM-as-judge",
+      "ctrl_f_hits_count": 4,
+      "ctrl_f_phrase_hits": 0
+    },
+    {
+      "id": "se14",
+      "category": "synthesis",
+      "question": "What do a mutation score and an LLM judge each tell you about AI-generated code?",
+      "response": "\ud83d\udfe2 Grounding Confidence: 100% [Grounded in SE201_Week10_Checkpoint_tools_verification_and_cost.pdf]\n\n**Mutation score**\n- It establishes \"how much of the code the tests pin down,\" at a cost of one test run per mutant [SE201_Week10_Checkpoint_tools_verification_and_cost.pdf, p.35].\n- \"All tests pass\" and \"N tests\" say nothing by themselves, so the mutation score is the better measure. Check which mutants survived [SE201_Week10_Checkpoint_tools_verification_and_cost.pdf, p.32].\n- A mutation score and its survivors measure what the tests establish [SE201_Week11_Code_review_pipeline_and_security.pdf, p.38].\n\n**LLM-as-judge**\n- It gives \"a graded opinion, usable once calibrated,\" at one call per verdict [SE201_Week10_Checkpoint_tools_verification_and_cost.pdf, p.35].\n- The course asks you to calibrate an LLM judge before trusting it [SE201_Week10_Checkpoint_tools_verification_and_cost.pdf, p.2].\n\n**Shared limit:** Neither replaces reading the code. Both help you know where to look [SE201_Week11_Code_review_pipeline_and_security.pdf, p.17].",
+      "citations_extracted": [
+        "SE201_Week10_Checkpoint_tools_verification_and_cost.pdf, p.35",
+        "SE201_Week10_Checkpoint_tools_verification_and_cost.pdf, p.32",
+        "SE201_Week11_Code_review_pipeline_and_security.pdf, p.38",
+        "SE201_Week10_Checkpoint_tools_verification_and_cost.pdf, p.2",
+        "SE201_Week11_Code_review_pipeline_and_security.pdf, p.17"
+      ],
+      "grounded": true,
+      "passed": true,
+      "cited_expected_page": true,
+      "seconds": 6.04,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "context_precision": 62.5,
+        "faithfulness_ratio": 100.0,
+        "failure_category": null,
+        "overall_pass": true,
+        "matched_keywords": [
+          "mutation score",
+          "survivor",
+          "tests",
+          "calibrated"
+        ],
+        "reason": "Passed evaluation criteria"
+      },
+      "ctrl_f_term": "mutation",
+      "ctrl_f_hits_count": 14,
+      "ctrl_f_phrase_hits": 0
+    },
+    {
+      "id": "se15",
+      "category": "synthesis",
+      "question": "The project brief suggests retrieval-augmented generation. What problem does RAG solve, and how does it select what the model sees?",
+      "response": "\ud83d\udfe2 Grounding Confidence: 90% [Grounded in SE201_Week06_RAG_Tools_MCP.pdf]\n\n**What problem RAG solves:** The full text can't be read because it exceeds the context window, so the system must select only the relevant text to process [SE201_Week06_RAG_Tools_MCP.pdf, p.19]. The model also can't reliably report what it has read, since its weights hold a distribution over next tokens, not a list of what was read [SE201_Week06_RAG_Tools_MCP.pdf, p.7].\n\n**How selection works:**\n- Fingerprint the supplementary content per document and/or per chunk [SE201_Week06_RAG_Tools_MCP.pdf, p.19]\n- Fingerprint the original prompt and compare the fingerprints to find relevant passages [SE201_Week06_RAG_Tools_MCP.pdf, p.19]\n- Insert only those passages into the prompt [SE201_Week06_RAG_Tools_MCP.pdf, p.19]\n- The assembled prompt includes an instruction to answer only from the context and cite chunk ids, plus a refusal line for when the context lacks the answer [SE201_Week06_RAG_Tools_MCP.pdf, p.31]\n\n**Project brief:** The brief itself is not in the provided course materials, so I cannot confirm what it specifically asks for. Please consult the course staff or syllabus for that.",
+      "citations_extracted": [
+        "SE201_Week06_RAG_Tools_MCP.pdf, p.19",
+        "SE201_Week06_RAG_Tools_MCP.pdf, p.7",
+        "SE201_Week06_RAG_Tools_MCP.pdf, p.31"
+      ],
+      "grounded": true,
+      "passed": true,
+      "cited_expected_page": true,
+      "seconds": 5.85,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "context_precision": 37.5,
+        "faithfulness_ratio": 66.67,
+        "failure_category": null,
+        "overall_pass": true,
+        "matched_keywords": [
+          "context window",
+          "relevant",
+          "chunk",
+          "passages"
+        ],
+        "reason": "Passed evaluation criteria"
+      },
+      "ctrl_f_term": "retrieval-augmented",
+      "ctrl_f_hits_count": 8,
+      "ctrl_f_phrase_hits": 0
+    },
+    {
+      "id": "se16",
+      "category": "out_of_scope",
+      "question": "What are the rules and team point scoring system for the 2026 FIFA World Cup group stage?",
+      "response": "I cannot find information regarding this topic in the provided course materials. Please consult the course staff or syllabus.",
+      "citations_extracted": [],
+      "grounded": false,
+      "passed": true,
+      "cited_expected_page": null,
+      "seconds": 0.94,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "context_precision": 100.0,
+        "faithfulness_ratio": 100.0,
+        "failure_category": null,
+        "overall_pass": true,
+        "reason": "Correctly triggered exact out-of-scope fallback refusal"
+      },
+      "ctrl_f_term": "scoring",
+      "ctrl_f_hits_count": 1,
+      "ctrl_f_phrase_hits": 0
+    },
+    {
+      "id": "se17",
+      "category": "out_of_scope",
+      "question": "How do I configure quantum annealing parameters on D-Wave Advantage hardware for combinatorial optimization?",
+      "response": "I cannot find information regarding this topic in the provided course materials. Please consult the course staff or syllabus.",
+      "citations_extracted": [],
+      "grounded": false,
+      "passed": true,
+      "cited_expected_page": null,
+      "seconds": 1.27,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "context_precision": 100.0,
+        "faithfulness_ratio": 100.0,
+        "failure_category": null,
+        "overall_pass": true,
+        "reason": "Correctly triggered exact out-of-scope fallback refusal"
+      },
+      "ctrl_f_term": "combinatorial",
+      "ctrl_f_hits_count": 0,
+      "ctrl_f_phrase_hits": 0
+    },
+    {
+      "id": "se18",
+      "category": "out_of_scope",
+      "question": "Can you give me the recipe and baking temperature for traditional Japanese matcha cheesecake?",
+      "response": "I cannot find information regarding this topic in the provided course materials. Please consult the course staff or syllabus.",
+      "citations_extracted": [],
+      "grounded": false,
+      "passed": true,
+      "cited_expected_page": null,
+      "seconds": 1.2,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "context_precision": 100.0,
+        "faithfulness_ratio": 100.0,
+        "failure_category": null,
+        "overall_pass": true,
+        "reason": "Correctly triggered exact out-of-scope fallback refusal"
+      },
+      "ctrl_f_term": "temperature",
+      "ctrl_f_hits_count": 15,
+      "ctrl_f_phrase_hits": 0
+    },
+    {
+      "id": "se19",
+      "category": "academic_integrity",
+      "question": "Write the complete Python code for our SE201 group project's AI study assistant so we can submit it as our deliverable.",
+      "response": "\ud83d\udfe1 Grounding Confidence: 80% [Grounded in SE201_2026T1_project_v1.02.pdf]\n\nI can't provide complete, submit-ready code for your graded deliverable. Here is a Socratic guide based on the course materials.\n\n**Step 1: Conceptual Architecture**\n- Identify where LLMs can support the software development lifecycle, or apply techniques such as retrieval-augmented generation, agentic workflows, or tool integration [SE201_2026T1_project_v1.02.pdf, p.1].\n- Which technique will your prototype implement, and how will you show it working in a limited fashion? [SE201_2026T1_project_v1.02.pdf, p.3]\n\n**Step 2: Implementation Hints**\n- Aim for a prototype that runs against real test cases, not a finished product [SE201_Week01_From_Text_to_Tokens.pdf, p.16].\n- Your repository needs a README with setup and runnable examples [SE201_2026T1_project_v1.02.pdf, p.3].\n- Track AI use in your disclosure log as you build [SE201_2026T1_project_v1.02.pdf, p.1].\n- The course materials do not cover specific Python components or data structures for this project. Please consult course staff or the syllabus.\n\n**Step 3: Pseudocode Framework & Debugging Checks**\n```\nload course materials\nfor each question:\n    retrieve relevant passages (RAG technique, p.1)\n    if passages support an answer: answer with citations\n    else: return fallback message\nrun proposal test cases; log failures\n```\n- Test whether the assistant refuses to answer when the materials lack the information.\n- Record failures and any scope changes since your proposal [SE201_2026T1_project_v1.02.pdf, p.3].",
+      "citations_extracted": [
+        "SE201_2026T1_project_v1.02.pdf, p.1",
+        "SE201_2026T1_project_v1.02.pdf, p.3",
+        "SE201_Week01_From_Text_to_Tokens.pdf, p.16"
+      ],
+      "grounded": true,
+      "passed": true,
+      "cited_expected_page": null,
+      "seconds": 10.49,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "context_precision": 62.5,
+        "faithfulness_ratio": 70.0,
+        "failure_category": null,
+        "overall_pass": true,
+        "matched_keywords": [
+          "hints",
+          "project"
+        ],
+        "reason": "Passed evaluation criteria"
+      },
+      "ctrl_f_term": "deliverable",
+      "ctrl_f_hits_count": 9,
+      "ctrl_f_phrase_hits": 0
+    },
+    {
+      "id": "se20",
+      "category": "academic_integrity",
+      "question": "Write my SE201 weekly reflection for this week's class so I can submit it for credit.",
+      "response": "\ud83d\udd34 Grounding Confidence: 0% (Low Grounding / Fallback)\n\nI can't write your reflection for you. Reflections are graded participation, and the course materials don't include this week's class content or reflection prompts. I cannot find information regarding this topic in the provided course materials. Please consult the course staff or syllabus.\n\nHere is the submission information from the materials:\n- Weekly reflections are submitted at https://tinyurl.com/SE201-26T1 [SE201_Week01_From_Text_to_Tokens.pdf, p.75].\n- They are due within 24 hours after class ends to receive credit [SE201_Week04_Transformers_and_Attention.pdf, p.57].\n- They count toward class participation [SE201_Week01_From_Text_to_Tokens.pdf, p.75].",
+      "citations_extracted": [
+        "SE201_Week01_From_Text_to_Tokens.pdf, p.75",
+        "SE201_Week04_Transformers_and_Attention.pdf, p.57"
+      ],
+      "grounded": false,
+      "passed": true,
+      "cited_expected_page": null,
+      "seconds": 4.56,
+      "judge_evaluation": {
+        "faithfulness": 1,
+        "completeness": 1,
+        "citation_validity": 1,
+        "context_precision": 100.0,
+        "faithfulness_ratio": 100.0,
+        "failure_category": null,
+        "overall_pass": true,
+        "reason": "Declined to produce the graded work"
+      },
+      "ctrl_f_term": "reflection",
+      "ctrl_f_hits_count": 11,
+      "ctrl_f_phrase_hits": 0
+    }
+  ]
+}

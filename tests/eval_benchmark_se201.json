@@ -81,7 +81,7 @@
     "ground_truth_keywords": ["18 October", "23:59", "Sunday"],
     "expected_citation_type": "slide_or_page",
     "expected_sources": [
-      {"source": "SE201_2026T1_project_v1.02.pdf", "pages": [1]}
+      {"source": "SE201_2026T1_project_v1.02.pdf", "pages": [1, 2]}
     ],
     "is_in_scope": true
   },

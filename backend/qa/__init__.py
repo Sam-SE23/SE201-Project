@@ -44,7 +44,8 @@ from backend.qa.qa_prompts import (
     sanitize_and_detect_injection,
 )
 
-TOP_K = 4
+# 8 rather than 4, so questions that span two lectures retrieve passages from both.
+TOP_K = 8
 
 
 class GroundedQAEngine:

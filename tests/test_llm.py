@@ -71,19 +71,20 @@ def test_complete_sends_system_prompt_first_and_keeps_roles(client, calls):
     ]
 
 
-def test_complete_sends_ollama_settings_but_no_sampling_params(client, calls):
+def test_complete_sends_ollama_settings_with_temperature_zero(client, calls):
     client.complete("sys", [ChatTurn("user", "hi")])
     sent = calls[0]
     assert sent["api_base"] == "http://127.0.0.1:11434"
     assert sent["num_ctx"] == 8192
     assert sent["timeout"] == 30
-    assert "temperature" not in sent
+    assert sent["temperature"] == 0
 
 
 def test_hosted_models_get_no_ollama_settings(calls):
     LiteLLMClient("claude-sonnet-5-5", "http://127.0.0.1:11434", 8192, 30).complete(
         "sys", [ChatTurn("user", "hi")])
     assert "api_base" not in calls[0] and "num_ctx" not in calls[0]
+    assert "temperature" not in calls[0]
 
 
 def test_hosted_model_gets_the_universal_api_key(calls):

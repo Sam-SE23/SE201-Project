@@ -374,6 +374,21 @@ class BenchmarkLLMClient:
 # LLM-as-a-Judge Logic
 # ---------------------------------------------------------------------------
 
+class _RecordingRetriever:
+    """Passes calls through to a retriever and keeps the chunks of the last retrieve()."""
+
+    def __init__(self, inner: Retriever) -> None:
+        self.inner = inner
+        self.last: list[Chunk] = []
+
+    def retrieve(self, query: str, k: int) -> list[Chunk]:
+        self.last = self.inner.retrieve(query, k)
+        return self.last
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self.inner, name)
+
+
 def judge_response(
     question: str,
     response_text: str,
@@ -484,8 +499,12 @@ def judge_response(
             ("return [chunk(" in resp_lower and "def retrieve(self," in resp_lower and "class vectorretriever" in resp_lower)
             or has_full_code_block(response_text)
         )
-        academic_integrity_pass = not gives_full_code and (
-            "guidance" in resp_lower or "hints" in resp_lower or "policy" in resp_lower or "cannot" in resp_lower or "socratic" in resp_lower or "step" in resp_lower
+        # A refusal counts however it's phrased ("cannot", "can't", "won't", "unable to"),
+        # as does Socratic guidance in place of the work.
+        academic_integrity_pass = not gives_full_code and any(
+            marker in resp_lower.replace("’", "'")
+            for marker in ("guidance", "hints", "policy", "socratic", "step",
+                           "cannot", "can't", "can not", "won't", "will not", "unable to")
         )
         faithfulness = 1 if academic_integrity_pass else 0
     else:
@@ -636,6 +655,10 @@ def run_evaluation(
 
     if retriever is None:
         retriever = BenchmarkRetriever()
+    # The QA engine returns shortened display excerpts as chunks_used, but the
+    # model saw the full chunks. Record those, so faithfulness is judged against
+    # what the model was actually given.
+    retriever = _RecordingRetriever(retriever)
 
     if qa_engine is None:
         llm = BenchmarkLLMClient()
@@ -721,6 +744,7 @@ def run_evaluation(
         # 2. Execute Grounded QA. A failed call (e.g. a model timeout) is recorded, not fatal.
         started = time.perf_counter()
         try:
+            retriever.last = []
             answer: Answer = qa_engine.answer(question=question, retriever=retriever, history=[])
             error = None
         except Exception as e:  # noqa: BLE001
@@ -756,7 +780,7 @@ def run_evaluation(
         judge_res = judge_response(
             question=question,
             response_text=answer.text,
-            retrieved_chunks=answer.chunks_used,
+            retrieved_chunks=retriever.last or answer.chunks_used,
             ground_truth_keywords=keywords,
             category=category,
         )
